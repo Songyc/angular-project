@@ -22,33 +22,12 @@
     }
 
 	function inherit(parent, extra) {
-        // return new(extend(function () {}, {
-        //         prototype: parent
-        //     })
-        // )()
-    
-        var constructor =  extend(function () {}, {
+        return extend(new(
+            extend(function() {}, {             // 把{prototype: parent}添加到function () {}, 创建一个实例，再把extra属性复制到实例中
             prototype: parent
-        });
-
-
-        // return extend(
-        // 	new(
-        //     	extend(function() {}, {
-        //     		prototype: parent
-        // 		})
-        // 	)(), 
-       	// extra);
+        }))(), extra);
     }
     
-    console.log(inherit(
-    	{
-    		parent: function () {}
-    	}, 
-    	{
-    		extra: function extra() {}
-    	}
-    ))
 	</script>
 </body>
 </html>

@@ -455,9 +455,9 @@
     }
 
 
-    function inherit(parent, extra) {
+    function inherit(parent, extra) {           // 把{prototype: parent}添加到function () {}, 创建一个实例，再把extra属性复制到实例中
         return extend(new(
-            extend(function() {}, {
+            extend(function() {}, {             
             prototype: parent
         }))(), extra);
     }
@@ -865,12 +865,12 @@
                 "Can't copy! Making copies of Window or Scope instances is not supported.");
         }
 
-        if (!destination) {
-            destination = source;
+        if (!destination) {                     // 只有sourse
+            destination = source;               
             if (source) {
-                if (isArray(source)) {
+                if (isArray(source)) {          // destination 为 [], 递归调用 copy(source, destination, stackSource, stackDest);
                     destination = copy(source, [], stackSource, stackDest);
-                } else if (isDate(source)) {
+                } else if (isDate(source)) {    // 
                     destination = new Date(source.getTime());
                 } else if (isRegExp(source)) {
                     destination = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
@@ -887,17 +887,17 @@
             stackSource = stackSource || [];
             stackDest = stackDest || [];
 
-            if (isObject(source)) {
-                var index = stackSource.indexOf(source);
+            if (isObject(source)) {             // 如果为对象
+                var index = stackSource.indexOf(source);    // stackSource有source, 则返回stackDest对应index的值
                 if (index !== -1) return stackDest[index];
 
-                stackSource.push(source);
+                stackSource.push(source);       // 缓存
                 stackDest.push(destination);
             }
 
             var result;
-            if (isArray(source)) {
-                destination.length = 0;
+            if (isArray(source)) {              // 如果为数组
+                destination.length = 0;         // 
                 for (var i = 0; i < source.length; i++) {
                     result = copy(source[i], null, stackSource, stackDest);
                     if (isObject(source[i])) {
@@ -931,7 +931,7 @@
         }
         return destination;
     }
-
+    console.log(copy([1]));
     /**
      * Creates a shallow copy of an object, an array or a primitive.
      *
