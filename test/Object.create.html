@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Object.create</title>
+</head>
+<body>
+	<script>
+	function TestObjectCreate() {
+		this.testObject = 'testObject';
+	}
+
+	console.log(
+		Object.create(TestObjectCreate.prototype)
+	);
+
+	console.log(
+		new TestObjectCreate();
+	);
+	</script>
+</body>
+</html>

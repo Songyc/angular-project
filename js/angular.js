@@ -324,7 +324,7 @@
  * @returns {Object|Array} Reference to `obj`.
  */
 
-    function forEach(obj, iterator, context) {
+    function forEach(obj, iterator, context) {      // 遍历对象，数组
         var key, length;
         if (obj) {
             if (isFunction(obj)) {
@@ -564,7 +564,7 @@
 
     function isObject(value) {
         // http://jsperf.com/isobject4
-        return value !== null && typeof value === 'object';
+        return value !== null && typeof value === 'object';         // typeof null 为 '[object]'
     }
 
 
@@ -859,7 +859,7 @@
  </example>
  */
 
-    function copy(source, destination, stackSource, stackDest) {
+    function copy(source, destination, stackSource, stackDest) {      // 深复制对象，数组，字符串，类数组等，如果有缓存，从缓存中读取，没有则缓存。缺点，缓存可能会重复。如果传入的缓存对象可以转为false，则无法保存缓存对象，因为引用地址已经改变了。
         if (isWindow(source) || isScope(source)) {
             throw ngMinErr('cpws',
                 "Can't copy! Making copies of Window or Scope instances is not supported.");
@@ -868,14 +868,14 @@
         if (!destination) {                     // 只有sourse
             destination = source;               
             if (source) {
-                if (isArray(source)) {          // destination 为 [], 递归调用 copy(source, destination, stackSource, stackDest);
+                if (isArray(source)) {          // 如果source是数组，destination 为 [], 递归调用 copy(source, destination, stackSource, stackDest);
                     destination = copy(source, [], stackSource, stackDest);
-                } else if (isDate(source)) {    // 
+                } else if (isDate(source)) {    // 如果source是日期对象，复制一份赋值destination
                     destination = new Date(source.getTime());
-                } else if (isRegExp(source)) {
+                } else if (isRegExp(source)) {  // 复制正则
                     destination = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
                     destination.lastIndex = source.lastIndex;
-                } else if (isObject(source)) {
+                } else if (isObject(source)) {  // 如果为对象, 创建一个空对象，递归调用 copy(source, destination, stackSource, stackDest);
                     var emptyObject = Object.create(Object.getPrototypeOf(source));
                     destination = copy(source, emptyObject, stackSource, stackDest);
                 }
@@ -884,45 +884,45 @@
             if (source === destination) throw ngMinErr('cpi',
                 "Can't copy! Source and destination are identical.");
 
-            stackSource = stackSource || [];
+            stackSource = stackSource || [];          // 地址引用不同，如果stackSource为null，则引用新的地址
             stackDest = stackDest || [];
 
-            if (isObject(source)) {             // 如果为对象
-                var index = stackSource.indexOf(source);    // stackSource有source, 则返回stackDest对应index的值
-                if (index !== -1) return stackDest[index];
+            if (isObject(source)) {             // 如果缓存有，从缓存中取
+                var index = stackSource.indexOf(source);    // 如果stackSource有source元素, 则返回stackDest对应index的值
+                if (index !== -1) return stackDest[index];  
 
                 stackSource.push(source);       // 缓存
                 stackDest.push(destination);
             }
 
-            var result;
+            var result;                         // 没有缓存的情况
             if (isArray(source)) {              // 如果为数组
-                destination.length = 0;         // 
-                for (var i = 0; i < source.length; i++) {
-                    result = copy(source[i], null, stackSource, stackDest);
-                    if (isObject(source[i])) {
+                destination.length = 0;         // 清空目标对象
+                for (var i = 0; i < source.length; i++) {     // 遍历源对象
+                    result = copy(source[i], null, stackSource, stackDest);     // 深复制一个源对象的每一个元素, 也会缓存source[1]， 因为result !== source[i], destination为null，递归调用copy(source, destination, stackSource, stackDest)
+                    if (isObject(source[i])) {  // 缓存对象。重复缓存操作
                         stackSource.push(source[i]);
                         stackDest.push(result);
                     }
-                    destination.push(result);
+                    destination.push(result);   // 将结果插入到目标对象中
                 }
-            } else {
-                var h = destination.$$hashKey;
-                if (isArray(destination)) {
+            } else {                            
+                var h = destination.$$hashKey;  // 保留$$hashKey，下面要清空  
+                if (isArray(destination)) {     // 如果目标对象为数组，则清空
                     destination.length = 0;
                 } else {
-                    forEach(destination, function(value, key) {
+                    forEach(destination, function(value, key) {     // 否则认为是对象，先清空
                         delete destination[key];
                     });
                 }
-                for (var key in source) {
+                for (var key in source) {       // source为对象
                     if (source.hasOwnProperty(key)) {
-                        result = copy(source[key], null, stackSource, stackDest);
-                        if (isObject(source[key])) {
+                        result = copy(source[key], null, stackSource, stackDest);  // 复制对象的每个值
+                        if (isObject(source[key])) {    // 缓存
                             stackSource.push(source[key]);
                             stackDest.push(result);
                         }
-                        destination[key] = result;
+                        destination[key] = result;      // 复制到目标对象上
                     }
                 }
                 setHashKey(destination, h);
@@ -931,15 +931,20 @@
         }
         return destination;
     }
-    console.log(copy([1]));
+    // var sObj = [{0: 0, 1: 1}], dObj = [], sCache = [], dCache = [];
+
+    // console.log(typeof copy(sObj, dObj, sCache, dCache));
+    // console.log(sCache);
+    // console.log(dCache);
+
     /**
      * Creates a shallow copy of an object, an array or a primitive.
      *
      * Assumes that there are no proto properties for objects.
      */
 
-    function shallowCopy(src, dst) {
-        if (isArray(src)) {
+    function shallowCopy(src, dst) {  // 浅复制, 如果是内置对象，则过滤$$属性
+        if (isArray(src)) {         
             dst = dst || [];
 
             for (var i = 0, ii = src.length; i < ii; i++) {
@@ -990,48 +995,48 @@
      */
 
     function equals(o1, o2) {
-        if (o1 === o2) return true;
+        if (o1 === o2) return true;               // 处理null, NaN的情况
         if (o1 === null || o2 === null) return false;
-        if (o1 !== o1 && o2 !== o2) return true; // NaN === NaN
+        if (o1 !== o1 && o2 !== o2) return true;  // NaN === NaN
         var t1 = typeof o1,
             t2 = typeof o2,
             length, key, keySet;
-        if (t1 == t2) {
-            if (t1 == 'object') {
-                if (isArray(o1)) {
-                    if (!isArray(o2)) return false;
+        if (t1 == t2) {                           // 如果是对象
+            if (t1 == 'object') {                  
+                if (isArray(o1)) {                // o1为数组，并且每个元素相等，则返回true
+                    if (!isArray(o2)) return false;       
                     if ((length = o1.length) == o2.length) {
                         for (key = 0; key < length; key++) {
                             if (!equals(o1[key], o2[key])) return false;
                         }
                         return true;
                     }
-                } else if (isDate(o1)) {
+                } else if (isDate(o1)) {          // o1为日期，毫秒数相等，则返回true
                     if (!isDate(o2)) return false;
                     return equals(o1.getTime(), o2.getTime());
-                } else if (isRegExp(o1) && isRegExp(o2)) {
+                } else if (isRegExp(o1) && isRegExp(o2)) {      // o1为正则
                     return o1.toString() == o2.toString();
-                } else {
-                    if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) || isArray(o2)) return false;
+                } else {                          // 其它对象，string，undefined, boolean，默认为对象
+                    if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) || isArray(o2)) return false;   // 如果是$scope, window, o2为数组返回false
                     keySet = {};
                     for (key in o1) {
-                        if (key.charAt(0) === '$' || isFunction(o1[key])) continue;
-                        if (!equals(o1[key], o2[key])) return false;
+                        if (key.charAt(0) === '$' || isFunction(o1[key])) continue;     // 忽略$开头的key值，为函数的value
+                        if (!equals(o1[key], o2[key])) return false;                    // 比较每个相同键对应的值
                         keySet[key] = true;
                     }
-                    for (key in o2) {
+                    for (key in o2) {                                                   // 只有继承属性
                         if (!keySet.hasOwnProperty(key) &&
                             key.charAt(0) !== '$' &&
                             o2[key] !== undefined && !isFunction(o2[key])) return false;
                     }
-                    return true;
+                    return true;                                                        // 空对象
                 }
             }
         }
         return false;
     }
-
-    var csp = function() {
+    
+    var csp = function() {                        // 如果有ngCsp指令，则标记csp.isActive_为true
         if (isDefined(csp.isActive_)) return csp.isActive_;
 
         var active = !! (document.querySelector('[ng-csp]') ||
@@ -1049,8 +1054,6 @@
 
         return (csp.isActive_ = active);
     };
-
-
 
     function concat(array1, array2, index) {
         return array1.concat(slice.call(array2, index));
@@ -1081,10 +1084,10 @@
      */
     /* jshint +W101 */
 
-    function bind(self, fn) {
-        var curryArgs = arguments.length > 2 ? sliceArgs(arguments, 2) : [];
-        if (isFunction(fn) && !(fn instanceof RegExp)) {
-            return curryArgs.length ? function() {
+    function bind(self, fn) {         // 柯里化函数bind
+        var curryArgs = arguments.length > 2 ? sliceArgs(arguments, 2) : [];          // 柯里参数集
+        if (isFunction(fn) && !(fn instanceof RegExp)) {                
+            return curryArgs.length ? function() {                             //  
                 return arguments.length ? fn.apply(self, curryArgs.concat(slice.call(arguments, 0))) : fn.apply(self, curryArgs);
             } : function() {
                 return arguments.length ? fn.apply(self, arguments) : fn.call(self);
@@ -1096,10 +1099,10 @@
     }
 
 
-    function toJsonReplacer(key, value) {
+    function toJsonReplacer(key, value) {  // 去掉$$, window, document, scope的value加上$
         var val = value;
 
-        if (typeof key === 'string' && key.charAt(0) === '$' && key.charAt(1) === '$') {
+        if (typeof key === 'string' && key.charAt(0) === '$' && key.charAt(1) === '$') {    // 如果是$$开头的key值
             val = undefined;
         } else if (isWindow(value)) {
             val = '$WINDOW';
@@ -1128,7 +1131,7 @@
      * @returns {string|undefined} JSON-ified string representing `obj`.
      */
 
-    function toJson(obj, pretty) {
+    function toJson(obj, pretty) {                      // 格式化对象中字符, 去掉$$字符，因为$$字符只在内部应用
         if (typeof obj === 'undefined') return undefined;
         return JSON.stringify(obj, toJsonReplacer, pretty ? '  ' : null);
     }
@@ -1147,7 +1150,7 @@
      * @returns {Object|Array|string|number} Deserialized thingy.
      */
 
-    function fromJson(json) {
+    function fromJson(json) {               // 返序列化, 支持对象|数组|字符串|数字
         return isString(json) ? JSON.parse(json) : json;
     }
 
@@ -1156,14 +1159,14 @@
      * @returns {string} Returns the string representation of the element.
      */
 
-    function startingTag(element) {
-        element = jqLite(element).clone();
+    function startingTag(element) {         
+        element = jqLite(element).clone();      // 复制元素
         try {
             // turns out IE does not let you set .html() on elements which
             // are not allowed to have children. So we just ignore it.
-            element.empty();
+            element.empty();                    // 清空所有子节点
         } catch (e) {}
-        var elemHtml = jqLite('<div>').append(element).html();
+        var elemHtml = jqLite('<div>').append(element).html();      // 加入<div>
         try {
             return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :
                 elemHtml.
