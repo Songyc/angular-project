@@ -1256,7 +1256,7 @@
      *                     / "*" / "+" / "," / ";" / "="
      */
 
-    function encodeUriSegment(val) {
+    function encodeUriSegment(val) {                    // 我们需要我们的用户方法, encodeURIComponent太过极端, 不遵循字符串允许的路径
         return encodeUriQuery(val, true).
         replace(/%26/gi, '&').
         replace(/%3D/gi, '=').
@@ -1276,9 +1276,9 @@
      *                     / "*" / "+" / "," / ";" / "="
      */
 
-    function encodeUriQuery(val, pctEncodeSpaces) {
-        return encodeURIComponent(val).
-        replace(/%40/gi, '@').
+    function encodeUriQuery(val, pctEncodeSpaces) {     // 
+        return encodeURIComponent(val).                 // 先编码
+        replace(/%40/gi, '@').                          // 替换 '@', ':', '$', ';', ' '
         replace(/%3A/gi, ':').
         replace(/%24/g, '$').
         replace(/%2C/gi, ',').
@@ -1286,9 +1286,9 @@
         replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
     }
 
-    var ngAttrPrefixes = ['ng-', 'data-ng-', 'ng:', 'x-ng-'];
+    var ngAttrPrefixes = ['ng-', 'data-ng-', 'ng:', 'x-ng-'];       // ng前缀字符集
 
-    function getNgAttribute(element, ngAttr) {
+    function getNgAttribute(element, ngAttr) {          // 获取ng属性
         var attr, i, ii = ngAttrPrefixes.length;
         element = jqLite(element);
         for (i = 0; i < ii; ++i) {
