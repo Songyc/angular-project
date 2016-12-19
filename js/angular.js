@@ -3057,7 +3057,7 @@
         };
     });
 
-    function createEventHandler(element, events) {          // 
+    function createEventHandler(element, events) {          //  
         var eventHandler = function(event, type) {
             // jQuery specific api
             event.isDefaultPrevented = function() {
