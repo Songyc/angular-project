@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="test-div-wrap">
+		<div class="first-node"></div>
+		<div class="next-sibling"></div>
+		<div class="next-sibling"></div>
+		<div class="next-sibling"></div>
+		<div class="next-sibling"></div>
+		<div class="next-sibling"></div>
+		<div class="end-node"></div>
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var arr = document.querySelectorAll('.test-div-wrap div');
+
+	console.log(window.getBlockNodes(arr));
+	</script>
+</body>
+</html>

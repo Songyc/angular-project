@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script>
+	var a = 0;
+	function error() {
+		if(!a) {
+			throw 'error';
+		}
+		console.log(a); 			// 捕获异常后不执行下面的语句
+	}
+
+	try {
+		error();
+	}catch (e){
+		a = 1;
+		error();
+	}
+	</script>
+</body>
+</html>

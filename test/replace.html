@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+
+	<script>
+	var str = 'str123str345str789';
+	var strRegExp = /(s).+?(\d)/g;
+	str.replace(strRegExp, function (_, s, n, pos) {
+		console.log(_, s, n, pos);
+	});
+
+
+	var str = 'str123str345str789';
+	var strRegExp = /(\d+)/g;
+	str = str.replace(strRegExp, "$1" + 1);
+	console.log(str);
+	</script>
+</body>
+</html>

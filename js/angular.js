@@ -1168,10 +1168,10 @@
         } catch (e) {}
         var elemHtml = jqLite('<div>').append(element).html();      // 加入<div>
         try {
-            return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :
+            return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :     // 如果是文本，转成小写
                 elemHtml.
-            match(/^(<[^>]+>)/)[1].
-            replace(/^<([\w\-]+)/, function(match, nodeName) {
+            match(/^(<[^>]+>)/)[1].                                 // 去掉闭合标签
+            replace(/^<([\w\-]+)/, function(match, nodeName) {      // 将标签名转成小写
                 return '<' + lowercase(nodeName);
             });
         } catch (e) {
@@ -1180,7 +1180,7 @@
 
     }
 
-
+    
     /////////////////////////////////////////////////
 
     /**
@@ -1437,21 +1437,21 @@
         forEach(ngAttrPrefixes, function(prefix) {
             var name = prefix + 'app';
 
-            if (!appElement && element.hasAttribute && element.hasAttribute(name)) {
+            if (!appElement && element.hasAttribute && element.hasAttribute(name)) {      // 初始化appElement
                 appElement = element;
                 module = element.getAttribute(name);
             }
         });
-        forEach(ngAttrPrefixes, function(prefix) {
+        forEach(ngAttrPrefixes, function(prefix) {              // ['ng-', 'data-ng-', 'ng:', 'x-ng-']
             var name = prefix + 'app';
             var candidate;
 
-            if (!appElement && (candidate = element.querySelector('[' + name.replace(':', '\\:') + ']'))) {
+            if (!appElement && (candidate = element.querySelector('[' + name.replace(':', '\\:') + ']'))) {     // 遇到：转成\\:
                 appElement = candidate;
                 module = candidate.getAttribute(name);
             }
         });
-        if (appElement) {
+        if (appElement) {                                       // 如果有"strict-di"，说明要手动注入
             config.strictDi = getNgAttribute(appElement, "strict-di") !== null;
             bootstrap(appElement, module ? [module] : [], config);
         }
@@ -1508,17 +1508,17 @@
      * @returns {auto.$injector} Returns the newly created injector for this app.
      */
 
-    function bootstrap(element, modules, config) {
+    function bootstrap(element, modules, config) {                    // 引导程序
         if (!isObject(config)) config = {};
         var defaultConfig = {
             strictDi: false
         };
-        config = extend(defaultConfig, config);
-        var doBootstrap = function() {
+        config = extend(defaultConfig, config);                       // 默认非手动注入
+        var doBootstrap = function() {                                // 手动启动引导程序
             element = jqLite(element);
 
-            if (element.injector()) {
-                var tag = (element[0] === document) ? 'document' : startingTag(element);
+            if (element.injector()) {                                 // 如果已经注入，抛出异常
+                var tag = (element[0] === document) ? 'document' : startingTag(element);      //  获取元素html字符串, 去掉闭合标签
                 //Encode angle brackets to prevent input from being sanitized to empty string #8683
                 throw ngMinErr(
                     'btstrpd',
@@ -1526,25 +1526,25 @@
                     tag.replace(/</, '&lt;').replace(/>/, '&gt;'));
             }
 
-            modules = modules || [];
-            modules.unshift(['$provide',
+            modules = modules || [];                                  // 模块数组
+            modules.unshift(['$provide',                              // 头部注入['$provide']以及执行方法
                 function($provide) {
-                    $provide.value('$rootElement', element);
+                    $provide.value('$rootElement', element);          // 
                 }
             ]);
 
-            if (config.debugInfoEnabled) {
+            if (config.debugInfoEnabled) {                            // 优先定义用户的模块
                 // Pushing so that this overrides `debugInfoEnabled` setting defined in user's `modules`.
-                modules.push(['$compileProvider',
+                modules.push(['$compileProvider',                     // 头部注入['$compileProvider']以及执行方法
                     function($compileProvider) {
                         $compileProvider.debugInfoEnabled(true);
                     }
                 ]);
             }
 
-            modules.unshift('ng');
-            var injector = createInjector(modules, config.strictDi);
-            injector.invoke(['$rootScope', '$rootElement', '$compile', '$injector',
+            modules.unshift('ng');                                    // 头部插入ng
+            var injector = createInjector(modules, config.strictDi);      // 创建注射器, 把模块数组和strictDi属性传入, 指示要不要手动注入
+            injector.invoke(['$rootScope', '$rootElement', '$compile', '$injector',      // 
                 function bootstrapApply(scope, element, compile, injector) {
                     scope.$apply(function() {
                         element.data('$injector', injector);
@@ -1552,24 +1552,24 @@
                     });
                 }
             ]);
-            return injector;
+            return injector;                                          // 返回注射器
         };
 
-        var NG_ENABLE_DEBUG_INFO = /^NG_ENABLE_DEBUG_INFO!/;
+        var NG_ENABLE_DEBUG_INFO = /^NG_ENABLE_DEBUG_INFO!/;          
         var NG_DEFER_BOOTSTRAP = /^NG_DEFER_BOOTSTRAP!/;
 
-        if (window && NG_ENABLE_DEBUG_INFO.test(window.name)) {
-            config.debugInfoEnabled = true;
-            window.name = window.name.replace(NG_ENABLE_DEBUG_INFO, '');
+        if (window && NG_ENABLE_DEBUG_INFO.test(window.name)) {       // 如果window.name有 'NG_ENABLE_DEBUG_INFO'
+            config.debugInfoEnabled = true;                           // 加上标记信息
+            window.name = window.name.replace(NG_ENABLE_DEBUG_INFO, '');    // 删除window.name 'NG_ENABLE_DEBUG_INFO'
         }
 
-        if (window && !NG_DEFER_BOOTSTRAP.test(window.name)) {
-            return doBootstrap();
+        if (window && !NG_DEFER_BOOTSTRAP.test(window.name)) {        // 如果window.name没有'NG_DEFER_BOOTSTRAP'，说明没执行doBootstrap
+            return doBootstrap();                       // 执行doBootstrap 
         }
 
-        window.name = window.name.replace(NG_DEFER_BOOTSTRAP, '');
-        angular.resumeBootstrap = function(extraModules) {
-            forEach(extraModules, function(module) {
+        window.name = window.name.replace(NG_DEFER_BOOTSTRAP, '');    // window.name去掉'NG_DEFER_BOOTSTRAP'
+        angular.resumeBootstrap = function(extraModules) {            // 继续执行bootstrap
+            forEach(extraModules, function(module) {                  // 初始化其它模块
                 modules.push(module);
             });
             doBootstrap();
@@ -1587,7 +1587,7 @@
      * See {@link ng.$compileProvider#debugInfoEnabled} for more.
      */
 
-    function reloadWithDebugInfo() {
+    function reloadWithDebugInfo() {                                  // 重新加载debugInfo
         window.name = 'NG_ENABLE_DEBUG_INFO!' + window.name;
         window.location.reload();
     }
@@ -1601,24 +1601,24 @@
      * @param {DOMElement} element DOM element which is the root of angular application.
      */
 
-    function getTestability(rootElement) {
+    function getTestability(rootElement) {                          // 获取内部属性$$testability
         return angular.element(rootElement).injector().get('$$testability');
     }
 
     var SNAKE_CASE_REGEXP = /[A-Z]/g;
 
-    function snake_case(name, separator) {
+    function snake_case(name, separator) {                         // 将驼峰式转成连字符                 
         separator = separator || '_';
         return name.replace(SNAKE_CASE_REGEXP, function(letter, pos) {
             return (pos ? separator : '') + letter.toLowerCase();
         });
     }
-
+    
     var bindJQueryFired = false;
-    var skipDestroyOnNextJQueryCleanData;
-
-    function bindJQuery() {
-        var originalCleanData;
+    var skipDestroyOnNextJQueryCleanData;                         // 
+ 
+    function bindJQuery() {                                       // 绑定jQuery  
+        var originalCleanData;     
 
         if (bindJQueryFired) {
             return;
@@ -1630,7 +1630,7 @@
         // Angular 1.2+ requires jQuery 1.7+ for on()/off() support.
         // Angular 1.3+ technically requires at least jQuery 2.1+ but it may work with older
         // versions. It will not work for sure with jQuery <1.7, though.
-        if (jQuery && jQuery.fn.on) {
+        if (jQuery && jQuery.fn.on) {                             // 为jQuery实例添加方法
             jqLite = jQuery;
             extend(jQuery.fn, {
                 scope: JQLitePrototype.scope,
@@ -1644,43 +1644,43 @@
             // are passed through jQuery.cleanData. Monkey-patch this method to fire
             // the $destroy event on all removed nodes.
             originalCleanData = jQuery.cleanData;
-            jQuery.cleanData = function(elems) {
+            jQuery.cleanData = function(elems) {                  // 清除原始数据
                 var events;
-                if (!skipDestroyOnNextJQueryCleanData) {
+                if (!skipDestroyOnNextJQueryCleanData) {          // 先取出每个元素的缓存事件对象，如果有$destroy销毁事件，手动触发
                     for (var i = 0, elem;
                         (elem = elems[i]) != null; i++) {
-                        events = jQuery._data(elem, "events");
+                        events = jQuery._data(elem, "events");    
                         if (events && events.$destroy) {
                             jQuery(elem).triggerHandler('$destroy');
                         }
                     }
                 } else {
-                    skipDestroyOnNextJQueryCleanData = false;
+                    skipDestroyOnNextJQueryCleanData = false;     // 如果skipDestroyOnNextJQueryCleanData为true，说明已经销毁过，标记为false
                 }
-                originalCleanData(elems);
+                originalCleanData(elems);         // 清除
             };
         } else {
-            jqLite = JQLite;
+            jqLite = JQLite;                      // 如果没有引用jQuery, 就用内部写的JQLite
         }
 
-        angular.element = jqLite;
+        angular.element = jqLite;                 
 
         // Prevent double-proxying.
-        bindJQueryFired = true;
+        bindJQueryFired = true;                   // bindJQueryFired标记为true，不会绑定第二次
     }
 
     /**
      * throw error if the argument is falsy.
      */
 
-    function assertArg(arg, name, reason) {
+    function assertArg(arg, name, reason) {       // 断言参数
         if (!arg) {
             throw ngMinErr('areq', "Argument '{0}' is {1}", (name || '?'), (reason || "required"));
         }
-        return arg;
+        return arg;                               
     }
 
-    function assertArgFn(arg, name, acceptArrayAnnotation) {
+    function assertArgFn(arg, name, acceptArrayAnnotation) {          // 断言最后一个参数
         if (acceptArrayAnnotation && isArray(arg)) {
             arg = arg[arg.length - 1];
         }
@@ -1696,7 +1696,7 @@
      * @param  {String} context the context in which the name is used, such as module or directive
      */
 
-    function assertNotHasOwnProperty(name, context) {
+    function assertNotHasOwnProperty(name, context) {                 // 断言不是自定义属性
         if (name === 'hasOwnProperty') {
             throw ngMinErr('badname', "hasOwnProperty is not a valid {0} name", context);
         }
@@ -1711,7 +1711,7 @@
      */
     //TODO(misko): this function needs to be removed
 
-    function getter(obj, path, bindFnToScope) {
+    function getter(obj, path, bindFnToScope) {                       // 返回对象从路径访问的值.。任何未定义的遍历被忽略
         if (!path) return obj;
         var keys = path.split('.');
         var key;
@@ -1724,27 +1724,27 @@
                 obj = (lastInstance = obj)[key];
             }
         }
-        if (!bindFnToScope && isFunction(obj)) {
+        if (!bindFnToScope && isFunction(obj)) {                      // 如果找到的是方法，调用bind方法，修正上下文为lastInstance
             return bind(lastInstance, obj);
         }
         return obj;
     }
-
+    
     /**
      * Return the DOM siblings between the first and last node in the given array.
      * @param {Array} array like object
      * @returns {jqLite} jqLite collection containing the nodes
      */
 
-    function getBlockNodes(nodes) {
+    function getBlockNodes(nodes) {                                   // 获取参数nodes的所有元素，包括文本元素，转成jqLite元素并返回
         // TODO(perf): just check if all items in `nodes` are siblings and if they are return the original
         //             collection, otherwise update the original collection.
         var node = nodes[0];
-        var endNode = nodes[nodes.length - 1];
+        var endNode = nodes[nodes.length - 1];                        
         var blockNodes = [node];
 
         do {
-            node = node.nextSibling;
+            node = node.nextSibling;                                
             if (!node) break;
             blockNodes.push(node);
         } while (node !== endNode);
@@ -1752,7 +1752,7 @@
         return jqLite(blockNodes);
     }
 
-
+    
     /**
      * Creates a new object without a prototype. This object is useful for lookup without having to
      * guard against prototypically inherited properties via hasOwnProperty.
@@ -1765,15 +1765,15 @@
      * @returns {Object}
      */
 
-    function createMap() {
+    function createMap() {                // 创建一个没有原型的新对象
         return Object.create(null);
     }
 
-    var NODE_TYPE_ELEMENT = 1;
-    var NODE_TYPE_TEXT = 3;
-    var NODE_TYPE_COMMENT = 8;
-    var NODE_TYPE_DOCUMENT = 9;
-    var NODE_TYPE_DOCUMENT_FRAGMENT = 11;
+    var NODE_TYPE_ELEMENT = 1;            // 元素
+    var NODE_TYPE_TEXT = 3;               // 文本
+    var NODE_TYPE_COMMENT = 8;            // 注释
+    var NODE_TYPE_DOCUMENT = 9;           // document
+    var NODE_TYPE_DOCUMENT_FRAGMENT = 11;     // 文档碎片
 
     /**
      * @ngdoc type
@@ -1784,19 +1784,19 @@
      * Interface for configuring angular {@link angular.module modules}.
      */
 
-    function setupModuleLoader(window) {
+    function setupModuleLoader(window) {          // 设置模块加载
 
-        var $injectorMinErr = minErr('$injector');
-        var ngMinErr = minErr('ng');
+        var $injectorMinErr = minErr('$injector');    // 创建$injector模块抛出异常
+        var ngMinErr = minErr('ng');              // 创建ng模块抛出异常
 
         function ensure(obj, name, factory) {
-            return obj[name] || (obj[name] = factory());
+            return obj[name] || (obj[name] = factory());        
         }
 
-        var angular = ensure(window, 'angular', Object);
+        var angular = ensure(window, 'angular', Object);      // 获取window.angular, 否则初始化为空对象
 
         // We need to expose `angular.$$minErr` to modules such as `ngResource` that reference it during bootstrap
-        angular.$$minErr = angular.$$minErr || minErr;
+        angular.$$minErr = angular.$$minErr || minErr;        // 加入内部方法$$minErr
 
         return ensure(angular, 'module', function() {
             /** @type {Object.<string, angular.Module>} */
@@ -1853,18 +1853,18 @@
              *        {@link angular.Module#config Module#config()}.
              * @returns {module} new module with the {@link angular.Module} api.
              */
-            return function module(name, requires, configFn) {
-                var assertNotHasOwnProperty = function(name, context) {
+            return function module(name, requires, configFn) {                  // 创建一个模块name，指定该模块依赖的模块，模块的可选配置功能
+                var assertNotHasOwnProperty = function(name, context) {         // 断言没有属性hasOwnProperty
                     if (name === 'hasOwnProperty') {
                         throw ngMinErr('badname', 'hasOwnProperty is not a valid {0} name', context);
                     }
                 };
 
-                assertNotHasOwnProperty(name, 'module');
-                if (requires && modules.hasOwnProperty(name)) {
-                    modules[name] = null;
+                assertNotHasOwnProperty(name, 'module');                        // 模块名不能为hasOwnProperty
+                if (requires && modules.hasOwnProperty(name)) {                 // 如果有依赖并且模块已创建
+                    modules[name] = null;                                       // 清空模块
                 }
-                return ensure(modules, name, function() {
+                return ensure(modules, name, function() {                       // 返回该模块
                     if (!requires) {
                         throw $injectorMinErr('nomod', "Module '{0}' is not available! You either misspelled " +
                             "the module name or forgot to load it. If registering a module ensure that you " +
@@ -1872,18 +1872,18 @@
                     }
 
                     /** @type {!Array.<Array.<*>>} */
-                    var invokeQueue = [];
+                    var invokeQueue = [];                                       // 
 
                     /** @type {!Array.<Function>} */
-                    var configBlocks = [];
+                    var configBlocks = [];                                      // 
 
                     /** @type {!Array.<Function>} */
-                    var runBlocks = [];
+                    var runBlocks = [];                                         // 
 
-                    var config = invokeLater('$injector', 'invoke', 'push', configBlocks);
+                    var config = invokeLater('$injector', 'invoke', 'push', configBlocks);      // 返回一个配置方法，方法执行时会把'$injector', 'invoke', 参数加入到configBlocks中
 
                     /** @type {angular.Module} */
-                    var moduleInstance = {
+                    var moduleInstance = {                                      // 模块实例化对象
                         // Private state
                         _invokeQueue: invokeQueue,
                         _configBlocks: configBlocks,
@@ -1898,7 +1898,7 @@
                          * Holds the list of modules which the injector will load before the current module is
                          * loaded.
                          */
-                        requires: requires,
+                        requires: requires,                                     // 在模块加载前，先载入的依赖列表
 
                         /**
                          * @ngdoc property
@@ -1921,7 +1921,7 @@
                          * @description
                          * See {@link auto.$provide#provider $provide.provider()}.
                          */
-                        provider: invokeLater('$provide', 'provider'),
+                        provider: invokeLater('$provide', 'provider'),          // 返回一个配置方法，方法执行时会把'$provide', 'provide', 参数加入到invokeQueue中。创建新实例的服务
 
                         /**
                          * @ngdoc method
@@ -1932,7 +1932,7 @@
                          * @description
                          * See {@link auto.$provide#factory $provide.factory()}.
                          */
-                        factory: invokeLater('$provide', 'factory'),
+                        factory: invokeLater('$provide', 'factory'),            // 返回一个配置方法，方法执行时会把'$provide', 'factory', 参数加入到invokeQueue中。创建新实例的服务
 
                         /**
                          * @ngdoc method
@@ -1943,7 +1943,7 @@
                          * @description
                          * See {@link auto.$provide#service $provide.service()}.
                          */
-                        service: invokeLater('$provide', 'service'),
+                        service: invokeLater('$provide', 'service'),            // 返回一个配置方法，方法执行时会把'$provide', 'service', 参数加入到invokeQueue中。创建新实例的服务
 
                         /**
                          * @ngdoc method
@@ -1954,7 +1954,7 @@
                          * @description
                          * See {@link auto.$provide#value $provide.value()}.
                          */
-                        value: invokeLater('$provide', 'value'),
+                        value: invokeLater('$provide', 'value'),                // 返回一个配置方法，方法执行时会把'$provide', 'value', 参数加入到invokeQueue中
 
                         /**
                          * @ngdoc method
@@ -1966,7 +1966,7 @@
                          * Because the constant are fixed, they get applied before other provide methods.
                          * See {@link auto.$provide#constant $provide.constant()}.
                          */
-                        constant: invokeLater('$provide', 'constant', 'unshift'),
+                        constant: invokeLater('$provide', 'constant', 'unshift'),     // 返回一个配置方法，方法执行时会把'$provide', 'constant', 参数加入到invokeQueue头部
 
                         /**
                          * @ngdoc method
@@ -2000,7 +2000,7 @@
                          * See {@link ng.$animateProvider#register $animateProvider.register()} and
                          * {@link ngAnimate ngAnimate module} for more information.
                          */
-                        animation: invokeLater('$animateProvider', 'register'),
+                        animation: invokeLater('$animateProvider', 'register'),     // 创建一个新的实例animationfactory工厂函数
 
                         /**
                          * @ngdoc method
@@ -2011,7 +2011,7 @@
                          * @description
                          * See {@link ng.$filterProvider#register $filterProvider.register()}.
                          */
-                        filter: invokeLater('$filterProvider', 'register'),
+                        filter: invokeLater('$filterProvider', 'register'),         // 创建一个新的实例filterProvider工厂函数
 
                         /**
                          * @ngdoc method
@@ -2023,7 +2023,7 @@
                          * @description
                          * See {@link ng.$controllerProvider#register $controllerProvider.register()}.
                          */
-                        controller: invokeLater('$controllerProvider', 'register'),
+                        controller: invokeLater('$controllerProvider', 'register'),     // 创建一个新的实例controllerProvider工厂函数
 
                         /**
                          * @ngdoc method
@@ -2036,7 +2036,7 @@
                          * @description
                          * See {@link ng.$compileProvider#directive $compileProvider.directive()}.
                          */
-                        directive: invokeLater('$compileProvider', 'directive'),
+                        directive: invokeLater('$compileProvider', 'directive'),        // 创建一个新的实例compileProvider工厂函数
 
                         /**
                          * @ngdoc method
@@ -2067,7 +2067,7 @@
                         }
                     };
 
-                    if (configFn) {
+                    if (configFn) {                 // 如果有可选的配置，则调用config工厂方法，把['$injector', 'invoke', configFn]加入到configBlocks中。
                         config(configFn);
                     }
 
@@ -2080,10 +2080,10 @@
                      * @returns {angular.Module}
                      */
 
-                    function invokeLater(provider, method, insertMethod, queue) {
+                    function invokeLater(provider, method, insertMethod, queue) {           // 延迟注入，返回一个函数，把provider, method, 参数以数组的形式加到模块实例对象中，并返回对象
                         if (!queue) queue = invokeQueue;
                         return function() {
-                            queue[insertMethod || 'push']([provider, method, arguments]);
+                            queue[insertMethod || 'push']([provider, method, arguments]);    
                             return moduleInstance;
                         };
                     }
@@ -2203,7 +2203,7 @@
     };
 
 
-    function publishExternalAPI(angular) {
+    function publishExternalAPI(angular) {                  // 为angular对象加入方法
         extend(angular, {
             'bootstrap': bootstrap,
             'copy': copy,
@@ -2238,14 +2238,14 @@
             'reloadWithDebugInfo': reloadWithDebugInfo
         });
 
-        angularModule = setupModuleLoader(window);
-        try {
-            angularModule('ngLocale');
+        angularModule = setupModuleLoader(window);              // 创建angular.module加载器
+        try {   
+            angularModule('ngLocale');                          // 在modules里创建ngLocale模块, 每一次没写依赖会失败，捕获失败。
         } catch (e) {
-            angularModule('ngLocale', []).provider('$locale', $LocaleProvider);
+            angularModule('ngLocale', []).provider('$locale', $LocaleProvider);     // 创建ngLocale模块，模块实例对象调用provider把['$provider', 'provider', ['$locale', $LocaleProvider]]加入到模块实例对象ngLocale.invokeQueue中
         }
 
-        angularModule('ng', ['ngLocale'], ['$provide',
+        angularModule('ng', ['ngLocale'], ['$provide',          // 创建模块对象ng, 依赖ngLocale, ['$injector', 'invoke', ['$provide', ngModule]]加入到模块实例对象ng._configBlocks中
             function ngModule($provide) {
                 // $$sanitizeUriProvider needs to be before $compileProvider as it is used by it.
                 $provide.provider({
@@ -2449,7 +2449,7 @@
     /*
      * !!! This is an undocumented "private" function !!!
      */
-    JQLite._data = function(node) {
+    JQLite._data = function(node) {                            // 返回元素的缓存对象
         //jQuery always returns an object on cache miss
         return this.cache[node[this.expando]] || {};
     };
@@ -2459,21 +2459,21 @@
     }
 
 
-    var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
-    var MOZ_HACK_REGEXP = /^moz([A-Z])/;
-    var MOUSE_EVENT_MAP = {
-        mouseleave: "mouseout",
+    var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;               // 特殊字符正则
+    var MOZ_HACK_REGEXP = /^moz([A-Z])/;                        // 火狐hack正则
+    var MOUSE_EVENT_MAP = {                                     
+        mouseleave: "mouseout",                             
         mouseenter: "mouseover"
     };
-    var jqLiteMinErr = minErr('jqLite');
+    var jqLiteMinErr = minErr('jqLite');                        // jqLite模块的异常对象             
 
     /**
      * Converts snake_case to camelCase.
      * Also there is special case for Moz prefix starting with upper case letter.
      * @param name Name to normalize
      */
-
-    function camelCase(name) {
+ 
+    function camelCase(name) {                                  // 转成驼峰式
         return name.
         replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
             return offset ? letter.toUpperCase() : letter;
@@ -2481,9 +2481,9 @@
         replace(MOZ_HACK_REGEXP, 'Moz$1');
     }
 
-    var SINGLE_TAG_REGEXP = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;
-    var HTML_REGEXP = /<|&#?\w+;/;
-    var TAG_NAME_REGEXP = /<([\w:]+)/;
+    var SINGLE_TAG_REGEXP = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;       // 单标签正则
+    var HTML_REGEXP = /<|&#?\w+;/;                              // html正则
+    var TAG_NAME_REGEXP = /<([\w:]+)/;                          // 标签名正则
     var XHTML_TAG_REGEXP = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/gi;
 
     var wrapMap = {
@@ -2496,7 +2496,7 @@
         '_default': [0, "", ""]
     };
 
-    wrapMap.optgroup = wrapMap.option;
+    wrapMap.optgroup = wrapMap.option;                          
     wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
     wrapMap.th = wrapMap.td;
 
@@ -2505,20 +2505,20 @@
         return !HTML_REGEXP.test(html);
     }
 
-    function jqLiteAcceptsData(node) {
+    function jqLiteAcceptsData(node) {                      // 接收节点, document, window
         // The window object can accept data but has no nodeType
         // Otherwise we are only interested in elements (1) and documents (9)
         var nodeType = node.nodeType;
         return nodeType === NODE_TYPE_ELEMENT || !nodeType || nodeType === NODE_TYPE_DOCUMENT;
     }
 
-    function jqLiteBuildFragment(html, context) {
+    function jqLiteBuildFragment(html, context) {            // 创建文本碎片，将html字符串转成元素再加入到文本碎片中
         var tmp, tag, wrap,
             fragment = context.createDocumentFragment(),
             nodes = [],
             i;
 
-        if (jqLiteIsTextNode(html)) {
+        if (jqLiteIsTextNode(html)) {                        // 文本节点
             // Convert non-html into a text node
             nodes.push(context.createTextNode(html));
         } else {
@@ -2526,7 +2526,7 @@
             tmp = tmp || fragment.appendChild(context.createElement("div"));
             tag = (TAG_NAME_REGEXP.exec(html) || ["", ""])[1].toLowerCase();
             wrap = wrapMap[tag] || wrapMap._default;
-            tmp.innerHTML = wrap[1] + html.replace(XHTML_TAG_REGEXP, "<$1></$2>") + wrap[2];
+            tmp.innerHTML = wrap[1] + html.replace(XHTML_TAG_REGEXP, "<$1></$2>") + wrap[2];          // 做兼容，将html字符串转成元素
 
             // Descend through wrappers to the right content
             i = wrap[0];
@@ -2534,27 +2534,27 @@
                 tmp = tmp.lastChild;
             }
 
-            nodes = concat(nodes, tmp.childNodes);
+            nodes = concat(nodes, tmp.childNodes);          // 查找元素
 
             tmp = fragment.firstChild;
-            tmp.textContent = "";
+            tmp.textContent = "";                           // 清空textContent
         }
 
         // Remove wrapper from fragment
-        fragment.textContent = "";
+        fragment.textContent = "";                          // 自定义textContent, innerHTML
         fragment.innerHTML = ""; // Clear inner HTML
-        forEach(nodes, function(node) {
+        forEach(nodes, function(node) {                     // 将html转化的节点加入到文档
             fragment.appendChild(node);
         });
 
         return fragment;
     }
-
-    function jqLiteParseHTML(html, context) {
+    
+    function jqLiteParseHTML(html, context) {               // 解释html字符串
         context = context || document;
         var parsed;
 
-        if ((parsed = SINGLE_TAG_REGEXP.exec(html))) {
+        if ((parsed = SINGLE_TAG_REGEXP.exec(html))) {      // 如果单个标签，返回[元素]；如果多个标签，调用jqLiteBuildFragment返回多个元素
             return [context.createElement(parsed[1])];
         }
 
@@ -2562,12 +2562,12 @@
             return parsed.childNodes;
         }
 
-        return [];
+        return [];                                  
     }
 
     /////////////////////////////////////////////
 
-    function JQLite(element) {
+    function JQLite(element) {                              // 创建JQLite实例
         if (element instanceof JQLite) {
             return element;
         }
@@ -2585,34 +2585,34 @@
             return new JQLite(element);
         }
 
-        if (argIsString) {
-            jqLiteAddNodes(this, jqLiteParseHTML(element));
+        if (argIsString) {                                  // 调用jqLiteAddNodes方法
+            jqLiteAddNodes(this, jqLiteParseHTML(element));     // new JQLite(element);
         } else {
-            jqLiteAddNodes(this, element);
+            jqLiteAddNodes(this, element);                        
         }
     }
 
-    function jqLiteClone(element) {
-        return element.cloneNode(true);
+    function jqLiteClone(element) {                         
+        return element.cloneNode(true);     
     }
 
-    function jqLiteDealoc(element, onlyDescendants) {
+    function jqLiteDealoc(element, onlyDescendants) {       // 清除element的数据缓存, onlyDescendants指示是否清除它的所有子元素
         if (!onlyDescendants) jqLiteRemoveData(element);
 
-        if (element.querySelectorAll) {
-            var descendants = element.querySelectorAll('*');
+        if (element.querySelectorAll) { 
+            var descendants = element.querySelectorAll('*');    // 清除所有子元素
             for (var i = 0, l = descendants.length; i < l; i++) {
                 jqLiteRemoveData(descendants[i]);
             }
         }
     }
 
-    function jqLiteOff(element, type, fn, unsupported) {
+    function jqLiteOff(element, type, fn, unsupported) {    // 移除绑定的事件，并清除缓存
         if (isDefined(unsupported)) throw jqLiteMinErr('offargs', 'jqLite#off() does not support the `selector` argument');
 
-        var expandoStore = jqLiteExpandoStore(element);
-        var events = expandoStore && expandoStore.events;
-        var handle = expandoStore && expandoStore.handle;
+        var expandoStore = jqLiteExpandoStore(element);     // 获取元素缓存对象
+        var events = expandoStore && expandoStore.events;   // 事件缓存对象
+        var handle = expandoStore && expandoStore.handle;   // 事件句柄
 
         if (!handle) return; //no listeners registered
 
@@ -2621,10 +2621,10 @@
                 if (type !== '$destroy') {
                     removeEventListenerFn(element, type, handle);
                 }
-                delete events[type];
+                delete events[type];                        // 清除事件缓存
             }
         } else {
-            forEach(type.split(' '), function(type) {
+            forEach(type.split(' '), function(type) {       // 移除多个事件
                 if (isDefined(fn)) {
                     var listenerFns = events[type];
                     arrayRemove(listenerFns || [], fn);
@@ -2638,10 +2638,10 @@
             });
         }
     }
-
-    function jqLiteRemoveData(element, name) {
-        var expandoId = element.ng339;
-        var expandoStore = expandoId && jqCache[expandoId];
+    
+    function jqLiteRemoveData(element, name) {              // 删除缓存对象中参数为name的缓存数据
+        var expandoId = element.ng339;                      // 扩展id
+        var expandoStore = expandoId && jqCache[expandoId]; 
 
         if (expandoStore) {
             if (name) {
@@ -2661,7 +2661,7 @@
     }
 
 
-    function jqLiteExpandoStore(element, createIfNecessary) {
+    function jqLiteExpandoStore(element, createIfNecessary) {     // 创建数据缓存对象
         var expandoId = element.ng339,
             expandoStore = expandoId && jqCache[expandoId];
 
@@ -2678,13 +2678,13 @@
     }
 
 
-    function jqLiteData(element, key, value) {
+    function jqLiteData(element, key, value) {                    // 存储或获取数据缓存
         if (jqLiteAcceptsData(element)) {
 
             var isSimpleSetter = isDefined(value);
             var isSimpleGetter = !isSimpleSetter && key && !isObject(key);
             var massGetter = !key;
-            var expandoStore = jqLiteExpandoStore(element, !isSimpleGetter);
+            var expandoStore = jqLiteExpandoStore(element, !isSimpleGetter);    // 获取元素的数据缓存对象
             var data = expandoStore && expandoStore.data;
 
             if (isSimpleSetter) { // data('key', value)
@@ -2704,12 +2704,12 @@
         }
     }
 
-    function jqLiteHasClass(element, selector) {
+    function jqLiteHasClass(element, selector) {                  // 检测类名
         if (!element.getAttribute) return false;
         return ((" " + (element.getAttribute('class') || '') + " ").replace(/[\n\t]/g, " ").indexOf(" " + selector + " ") > -1);
     }
 
-    function jqLiteRemoveClass(element, cssClasses) {
+    function jqLiteRemoveClass(element, cssClasses) {             // 删除类名
         if (cssClasses && element.setAttribute) {
             forEach(cssClasses.split(' '), function(cssClass) {
                 element.setAttribute('class', trim(
@@ -2720,7 +2720,7 @@
         }
     }
 
-    function jqLiteAddClass(element, cssClasses) {
+    function jqLiteAddClass(element, cssClasses) {                // 添加类名
         if (cssClasses && element.setAttribute) {
             var existingClasses = (' ' + (element.getAttribute('class') || '') + ' ')
                 .replace(/[\n\t]/g, " ");
@@ -2737,7 +2737,7 @@
     }
 
 
-    function jqLiteAddNodes(root, elements) {
+    function jqLiteAddNodes(root, elements) {                       // 添加元素到JQLite实例上
         // THIS CODE IS VERY HOT. Don't make changes without benchmarking.
 
         if (elements) {
@@ -2763,19 +2763,19 @@
     }
 
 
-    function jqLiteController(element, name) {
+    function jqLiteController(element, name) {              // 调用jqLiteInheritedData
         return jqLiteInheritedData(element, '$' + (name || 'ngController') + 'Controller');
     }
 
-    function jqLiteInheritedData(element, name, value) {
+    function jqLiteInheritedData(element, name, value) {      // 从element向祖先父依次查询他们的数据缓存对象中的参数name对应的值，如果name为数据，一旦查询到立即返回
         // if element is the document object work with the html element instead
         // this makes $(document).scope() possible
-        if (element.nodeType == NODE_TYPE_DOCUMENT) {
+        if (element.nodeType == NODE_TYPE_DOCUMENT) {         // doucment转成html
             element = element.documentElement;
         }
-        var names = isArray(name) ? name : [name];
+        var names = isArray(name) ? name : [name];            // 将names转成数组 
 
-        while (element) {
+        while (element) {                                     // 
             for (var i = 0, ii = names.length; i < ii; i++) {
                 if ((value = jqLite.data(element, names[i])) !== undefined) return value;
             }
@@ -2786,22 +2786,22 @@
             element = element.parentNode || (element.nodeType === NODE_TYPE_DOCUMENT_FRAGMENT && element.host);
         }
     }
-
-    function jqLiteEmpty(element) {
-        jqLiteDealoc(element, true);
-        while (element.firstChild) {
+    
+    function jqLiteEmpty(element) {                 // 清空元素
+        jqLiteDealoc(element, true);                // 清空element和所有后代元素的数据缓存
+        while (element.firstChild) {                // 清除所有后代元素
             element.removeChild(element.firstChild);
         }
     }
 
-    function jqLiteRemove(element, keepData) {
+    function jqLiteRemove(element, keepData) {      // 删除element元素，keepData指示是否删除缓存数据
         if (!keepData) jqLiteDealoc(element);
         var parent = element.parentNode;
         if (parent) parent.removeChild(element);
     }
 
 
-    function jqLiteDocumentLoaded(action, win) {
+    function jqLiteDocumentLoaded(action, win) {    // 加载document
         win = win || window;
         if (win.document.readyState === 'complete') {
             // Force the action to be run async for consistent behaviour
@@ -2817,7 +2817,7 @@
     //////////////////////////////////////////
     // Functions which are declared directly.
     //////////////////////////////////////////
-    var JQLitePrototype = JQLite.prototype = {
+    var JQLitePrototype = JQLite.prototype = {      // 
         ready: function(fn) {
             var fired = false;
 
@@ -2839,7 +2839,7 @@
                 this.on('DOMContentLoaded', trigger);
             }
         },
-        toString: function() {
+        toString: function() {                      // 数组转成字符串
             var value = [];
             forEach(this, function(e) {
                 value.push('' + e);
@@ -2847,7 +2847,7 @@
             return '[' + value.join(', ') + ']';
         },
 
-        eq: function(index) {
+        eq: function(index) {                       // 选取元素，index可以是负值
             return (index >= 0) ? jqLite(this[index]) : jqLite(this[this.length + index]);
         },
 
@@ -2878,7 +2878,7 @@
         'ngPattern': 'pattern'
     };
 
-    function getBooleanAttrName(element, name) {
+    function getBooleanAttrName(element, name) {                    // 获取BOOLEAN_ATTR对象中属性为参数name的值
         // check dom last since we will most likely fail on name
         var booleanAttr = BOOLEAN_ATTR[name.toLowerCase()];
 
@@ -2886,28 +2886,28 @@
         return booleanAttr && BOOLEAN_ELEMENTS[nodeName_(element)] && booleanAttr;
     }
 
-    function getAliasedAttrName(element, name) {
+    function getAliasedAttrName(element, name) {                    // 当element为input或者textarea时，获取ALIASED_ATTR对象中属性为参数name的值
         var nodeName = element.nodeName;
         return (nodeName === 'INPUT' || nodeName === 'TEXTAREA') && ALIASED_ATTR[name];
     }
 
-    forEach({
+    forEach({                         // 加到JQLite上，跟jQuery同步
         data: jqLiteData,
         removeData: jqLiteRemoveData
     }, function(fn, name) {
         JQLite[name] = fn;
     });
+    
+    forEach({                         
+        data: jqLiteData,             // 
+        inheritedData: jqLiteInheritedData,     // 从element向祖先父依次查询他们的数据缓存对象中的参数name对应的值
 
-    forEach({
-        data: jqLiteData,
-        inheritedData: jqLiteInheritedData,
-
-        scope: function(element) {
-            // Can't use jqLiteData here directly so we stay compatible with jQuery!
+        scope: function(element) {              // 获取数据缓存对象的$scope属性或者继续属性$isolateScope, $scope
+            // Can't use jqLiteData here directly so we stay compatible with jQuery!  
             return jqLite.data(element, '$scope') || jqLiteInheritedData(element.parentNode || element, ['$isolateScope', '$scope']);
         },
 
-        isolateScope: function(element) {
+        isolateScope: function(element) {       // 获取$isolateScope或者$isolateScopeNoTemplate
             // Can't use jqLiteData here directly so we stay compatible with jQuery!
             return jqLite.data(element, '$isolateScope') || jqLite.data(element, '$isolateScopeNoTemplate');
         },

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="test-element">
+		
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var origalTestElement = document.querySelector('.test-element');
+	var testElement = angular.element(origalTestElement);
+
+	testElement.data('test-data', 0);
+	testElement.data('test-data2', 1);
+	console.log(jqCache);
+
+	console.log(jqLiteInheritedData(origalTestElement, ['test-data', 'test-data2']));
+	</script>
+</body>
+</html>
