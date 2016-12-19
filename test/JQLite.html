@@ -7,7 +7,11 @@
 <body>
 	<script src="../js/angular.js"></script>
 	<script>
-	angular.element('<div></div><div></div>');
+	var jQLiteInstance = angular.element('<div></div><div></div>');
+	jQLiteInstance.data('test');
+	jQLiteInstance.hasClass('test');
+	jQLiteInstance.removeAttr('11');
+	jQLiteInstance.text();
 	</script>
 </body>
 </html>

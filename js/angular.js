@@ -2763,7 +2763,7 @@
     }
 
 
-    function jqLiteController(element, name) {              // 调用jqLiteInheritedData
+    function jqLiteController(element, name) {              // 调用jqLiteInheritedData，从element向祖先父依次查询他们的数据缓存对象中的name内部控制器对应的值
         return jqLiteInheritedData(element, '$' + (name || 'ngController') + 'Controller');
     }
 
@@ -2817,8 +2817,8 @@
     //////////////////////////////////////////
     // Functions which are declared directly.
     //////////////////////////////////////////
-    var JQLitePrototype = JQLite.prototype = {      // 
-        ready: function(fn) {
+    var JQLitePrototype = JQLite.prototype = {      // 实例方法 
+        ready: function(fn) {                       // dom ready
             var fired = false;
 
             function trigger() {
@@ -2899,7 +2899,7 @@
     });
     
     forEach({                         
-        data: jqLiteData,             // 
+        data: jqLiteData,                       // 获取数据缓存对象
         inheritedData: jqLiteInheritedData,     // 从element向祖先父依次查询他们的数据缓存对象中的参数name对应的值
 
         scope: function(element) {              // 获取数据缓存对象的$scope属性或者继续属性$isolateScope, $scope
@@ -2912,19 +2912,19 @@
             return jqLite.data(element, '$isolateScope') || jqLite.data(element, '$isolateScopeNoTemplate');
         },
 
-        controller: jqLiteController,
+        controller: jqLiteController,           // 获取element数据缓存对象中的内部控制器
 
-        injector: function(element) {
-            return jqLiteInheritedData(element, '$injector');
+        injector: function(element) {           // 获取继承属性'$injector' 
+            return jqLiteInheritedData(element, '$injector');       
         },
 
-        removeAttr: function(element, name) {
+        removeAttr: function(element, name) {       // 移除特性name
             element.removeAttribute(name);
         },
 
-        hasClass: jqLiteHasClass,
+        hasClass: jqLiteHasClass,               // 检测类名
 
-        css: function(element, name, value) {
+        css: function(element, name, value) {   // 设置样式
             name = camelCase(name);
 
             if (isDefined(value)) {
@@ -2934,7 +2934,7 @@
             }
         },
 
-        attr: function(element, name, value) {
+        attr: function(element, name, value) {      // 如果是布尔型的特性，设置或移除。设置特性或返回特性
             var lowercasedName = lowercase(name);
             if (BOOLEAN_ATTR[lowercasedName]) {
                 if (isDefined(value)) {
@@ -2950,7 +2950,7 @@
                         (element.attributes.getNamedItem(name) || noop).specified) ? lowercasedName : undefined;
                 }
             } else if (isDefined(value)) {
-                element.setAttribute(name, value);
+                element.setAttribute(name, value);      
             } else if (element.getAttribute) {
                 // the extra argument "2" is to get the right thing for a.href in IE, see jQuery code
                 // some elements (e.g. Document) don't have get attribute, so return undefined
@@ -2960,7 +2960,7 @@
             }
         },
 
-        prop: function(element, name, value) {
+        prop: function(element, name, value) {      // 设置或者返回属性
             if (isDefined(value)) {
                 element[name] = value;
             } else {
@@ -2968,7 +2968,7 @@
             }
         },
 
-        text: (function() {
+        text: (function() {                         // 设置或者返回文本内容
             getText.$dv = '';
             return getText;
 
@@ -2981,7 +2981,7 @@
             }
         })(),
 
-        val: function(element, value) {
+        val: function(element, value) {             // 设置或者返回元素的value值
             if (isUndefined(value)) {
                 if (element.multiple && nodeName_(element) === 'select') {
                     var result = [];
@@ -2997,11 +2997,11 @@
             element.value = value;
         },
 
-        html: function(element, value) {
+        html: function(element, value) {            // 设置或者返回元素的html
             if (isUndefined(value)) {
                 return element.innerHTML;
             }
-            jqLiteDealoc(element, true);
+            jqLiteDealoc(element, true);            // 清除所有子元素的缓存数据
             element.innerHTML = value;
         },
 
@@ -3010,24 +3010,24 @@
         /**
          * Properties: writes return selection, reads return first value
          */
-        JQLite.prototype[name] = function(arg1, arg2) {
-            var i, key;
-            var nodeCount = this.length;
+        JQLite.prototype[name] = function(arg1, arg2) {             // empty(0), scope(1), isolateScope(1), injector(1)
+            var i, key;                                             // removeAttr(2), hasClass(2), jqLiteController(2), text(2), val(2), html(2)
+            var nodeCount = this.length;                            // data(3), inheritedData(3), css(3), attr(3), prop(3) 
 
             // jqLiteHasClass has only two arguments, but is a getter-only fn, so we need to special-case it
             // in a way that survives minification.
             // jqLiteEmpty takes no arguments but is a setter.
-            if (fn !== jqLiteEmpty &&
-                (((fn.length == 2 && (fn !== jqLiteHasClass && fn !== jqLiteController)) ? arg1 : arg2) === undefined)) {
-                if (isObject(arg1)) {
+            if (fn !== jqLiteEmpty &&           // 获取方法， 设置并获取
+                (((fn.length == 2 && (fn !== jqLiteHasClass && fn !== jqLiteController)) ? arg1 : arg2) === undefined)) {       // scope(0), isolateScope(0), injector(0), hasClass(1), text(0), val(0), html(0), jqliteController(1), data(1), inheritedData(1), css(1), attr(1), prop(1)
+                if (isObject(arg1)) {           // 允许写成对象批量操作
 
                     // we are a write, but the object properties are the key/values
                     for (i = 0; i < nodeCount; i++) {
-                        if (fn === jqLiteData) {
+                        if (fn === jqLiteData) {            // 如果是.data, 直接存储
                             // data() takes the whole object in jQuery
                             fn(this[i], arg1);
                         } else {
-                            for (key in arg1) {
+                            for (key in arg1) {             // 否则遍历对象arg1，调用fn设置
                                 fn(this[i], key, arg1[key]);
                             }
                         }
@@ -3037,18 +3037,18 @@
                 } else {
                     // we are a read, so read the first child.
                     // TODO: do we still need this?
-                    var value = fn.$dv;
+                    var value = fn.$dv;                     // text
                     // Only if we have $dv do we iterate over all, otherwise it is just the first element.
-                    var jj = (value === undefined) ? Math.min(nodeCount, 1) : nodeCount;
+                    var jj = (value === undefined) ? Math.min(nodeCount, 1) : nodeCount;        // 如果是text方法，并且有多个元素
                     for (var j = 0; j < jj; j++) {
                         var nodeValue = fn(this[j], arg1, arg2);
-                        value = value ? value + nodeValue : nodeValue;
+                        value = value ? value + nodeValue : nodeValue;                  // 多个元素的文本相加
                     }
-                    return value;
+                    return value;                           // 
                 }
-            } else {
-                // we are a write, so apply to all children
-                for (i = 0; i < nodeCount; i++) {
+            } else {                                        // 设置方法。 empty(0), removeAttr(1), text(1), val(1), html(1), data(2), inheritedData(2), css(2), attr(2), prop(2)
+                // we are a write, so apply to all children // 
+                for (i = 0; i < nodeCount; i++) {           // 
                     fn(this[i], arg1, arg2);
                 }
                 // return self for chaining
@@ -3057,7 +3057,7 @@
         };
     });
 
-    function createEventHandler(element, events) {
+    function createEventHandler(element, events) {          // 
         var eventHandler = function(event, type) {
             // jQuery specific api
             event.isDefaultPrevented = function() {
