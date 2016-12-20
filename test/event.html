@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<!-- <div class="syc">syc</div> -->
+
+	<div class="warp1">
+		<div class="warp2">
+			<div class="warp3 content">
+				syc
+			</div>
+		</div>
+	</div>
+	<script>
+	// var syc = document.querySelector('.syc');
+	// syc.onclick = function (e) {
+	// 	console.log(e);
+	// 	console.log(e.immediatePropagationStopped); 	// 原生事件对象没有  undefined
+	// }
+
+	var warp3 = document.querySelector('.warp3');
+	var warp2 = document.querySelector('.warp2');
+	var warp1 = document.querySelector('.warp1');
+
+	warp3.addEventListener('click', function (e) {
+		console.log('.warp3-1');
+	});
+
+	warp3.onclick = function (e) {
+		console.log('onclick .warp3-1');
+	}
+
+	warp3.addEventListener('click', function (e) {
+		e.stopImmediatePropagation();
+		console.log('.warp3-2');	
+	})
+
+	warp3.addEventListener('mouseover', function (e) {
+		console.log('mouseover .warp3-1');	
+	})
+
+	warp3.addEventListener('mouseover', function (e) {
+		console.log('mouseover .warp3-2');	
+	})
+
+	warp3.addEventListener('click', function (e) {
+		console.log('.warp3-3');
+	});
+
+	warp2.addEventListener('click', function (e) {
+		console.log('.warp2');
+	});
+
+	</script>
+</body>
+</html>

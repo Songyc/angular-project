@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	*{margin:0;padding:0;}
+	.boxs-wrap-parent{padding:200px;}
+	.boxs-wrap{background:transparent;border:1px solid #000;padding:40px;overflow:hidden;display:inline-block;}
+	.box{border:1px solid #000;width:200px;height:100px;background:red;text-align:center;line-height:100px;float:left;margin:0 20px;}
+	</style>
+</head>
+<body>
+	<div class="boxs-wrap-parent">
+		<div class="boxs-wrap">
+			<div class="box box1">
+				box1	
+			</div>
+			<div class="box box2">
+				box2
+			</div>
+		</div>
+	</div>
+	<script>
+	var boxsWrap = document.querySelector('.boxs-wrap'),
+		box1 = boxsWrap.querySelector('.box1'),
+		box2 = boxsWrap.querySelector('.box2');
+
+	// boxsWrap.addEventListener('mouseover', function () {
+	// 	console.log('onmouseover');
+	// })
+
+	// boxsWrap.addEventListener('onmouseout', function () {
+	// 	console.log('ononmouseout');
+	// })
+
+	// boxsWrap.addEventListener('mouseenter', function () {
+	// 	console.log('onmouseenter');
+	// })
+
+	// boxsWrap.addEventListener('mouseleave', function () {
+	// 	console.log('onmouseleave');
+	// })
+	
+	boxsWrap.onmouseover = function (e) { 				// relatedTarget === fromElement relatedTarget !== this
+		// console.log(e);
+		// console.log(e.relatedTarget);
+	}
+
+	boxsWrap.onmouseout = function (e) { 				// relatedTarget === toElement  relatedTarget === this
+		console.log(e);
+		// console.log(e.relatedTarget);
+	}
+
+	boxsWrap.onmouseenter = function (e) { 	 			// relatedTarget === fromElement 		
+		// console.log(e);
+		// console.log(e.relatedTarget);
+	}
+
+	boxsWrap.onmouseleave = function (e) { 	 			// relatedTarget === toElement		
+		// console.log(e);
+		// console.log(e.relatedTarget);
+	}  
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="test-div">
+		syc
+	</div>
+	<script>
+	// event.relatedTarget
+	var testDiv = document.querySelector('.test-div');
+
+	testDiv.onmouseover = function (e) {
+		console.log(e.relatedTarget);
+	}
+	</script>
+</body>
+</html>

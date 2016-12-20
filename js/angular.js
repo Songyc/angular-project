@@ -3052,48 +3052,48 @@
                     fn(this[i], arg1, arg2);
                 }
                 // return self for chaining
-                return this;
+                return this;                                // 链式调用 
             }
         };
     });
 
-    function createEventHandler(element, events) {          //  
+    function createEventHandler(element, events) {          // 创建主事件回调函数, events是事件缓存对象
         var eventHandler = function(event, type) {
             // jQuery specific api
             event.isDefaultPrevented = function() {
                 return event.defaultPrevented;
             };
 
-            var eventFns = events[type || event.type];
-            var eventFnsLength = eventFns ? eventFns.length : 0;
+            var eventFns = events[type || event.type];      // type对应的事件回调函数
+            var eventFnsLength = eventFns ? eventFns.length : 0;    // 事件回调函数的个数
 
-            if (!eventFnsLength) return;
+            if (!eventFnsLength) return;                    
 
-            if (isUndefined(event.immediatePropagationStopped)) {
-                var originalStopImmediatePropagation = event.stopImmediatePropagation;
-                event.stopImmediatePropagation = function() {
-                    event.immediatePropagationStopped = true;
+            if (isUndefined(event.immediatePropagationStopped)) {     // 如果没有立即停止传播的属性(jQuery事件对象有)
+                var originalStopImmediatePropagation = event.stopImmediatePropagation;      // 存储原始的stopImmediate
+                event.stopImmediatePropagation = function() {         // 重与stopImmediatePropagation方法
+                    event.immediatePropagationStopped = true;         // 标记immediatePropagationStopped为true
 
-                    if (event.stopPropagation) {
+                    if (event.stopPropagation) {                      // 执行停止传播事件
                         event.stopPropagation();
                     }
 
                     if (originalStopImmediatePropagation) {
-                        originalStopImmediatePropagation.call(event);
+                        originalStopImmediatePropagation.call(event);   // 再执行event.stopImmediatePropagation。元素绑定的其余相同类型事件的监听函数的执行也将被阻止.
                     }
                 };
             }
 
-            event.isImmediatePropagationStopped = function() {
+            event.isImmediatePropagationStopped = function() {          // 判断是否执行立即停止传播事件
                 return event.immediatePropagationStopped === true;
             };
 
             // Copy event handlers in case event handlers array is modified during execution.
-            if ((eventFnsLength > 1)) {
+            if ((eventFnsLength > 1)) {                                 // 复制一份eventFns
                 eventFns = shallowCopy(eventFns);
             }
 
-            for (var i = 0; i < eventFnsLength; i++) {
+            for (var i = 0; i < eventFnsLength; i++) {                  // 执行事件
                 if (!event.isImmediatePropagationStopped()) {
                     eventFns[i].call(element, event);
                 }
@@ -3102,8 +3102,8 @@
 
         // TODO: this is a hack for angularMocks/clearDataCache that makes it possible to deregister all
         //       events on `element`
-        eventHandler.elem = element;
-        return eventHandler;
+        eventHandler.elem = element;                                    // 加上elem
+        return eventHandler;                                            // 返回主事件回调函数
     }
 
     //////////////////////////////////////////
@@ -3112,36 +3112,36 @@
     // selector.
     //////////////////////////////////////////
     forEach({
-        removeData: jqLiteRemoveData,
+        removeData: jqLiteRemoveData,                                   // 移除数据缓存
 
-        on: function jqLiteOn(element, type, fn, unsupported) {
+        on: function jqLiteOn(element, type, fn, unsupported) {         // 添加事件到事件缓存对象中
             if (isDefined(unsupported)) throw jqLiteMinErr('onargs', 'jqLite#on() does not support the `selector` or `eventData` parameters');
 
             // Do not add event handlers to non-elements because they will not be cleaned up.
-            if (!jqLiteAcceptsData(element)) {
+            if (!jqLiteAcceptsData(element)) {                          
                 return;
             }
 
-            var expandoStore = jqLiteExpandoStore(element, true);
-            var events = expandoStore.events;
-            var handle = expandoStore.handle;
+            var expandoStore = jqLiteExpandoStore(element, true);       // 获取jqLite缓存对象
+            var events = expandoStore.events;                           // 事件缓存对象
+            var handle = expandoStore.handle;                           // 主事件回调函数
 
             if (!handle) {
-                handle = expandoStore.handle = createEventHandler(element, events);
+                handle = expandoStore.handle = createEventHandler(element, events);   
             }
 
             // http://jsperf.com/string-indexof-vs-split
-            var types = type.indexOf(' ') >= 0 ? type.split(' ') : [type];
+            var types = type.indexOf(' ') >= 0 ? type.split(' ') : [type];      // 支持多个事件，用' '隔开，转成数组。
             var i = types.length;
 
             while (i--) {
                 type = types[i];
-                var eventFns = events[type];
+                var eventFns = events[type];      // 获取type类型对应的事件，可能绑定多个
 
-                if (!eventFns) {
-                    events[type] = [];
+                if (!eventFns) {                  // 如果没有定义
+                    events[type] = [];            // 设置为空数组
 
-                    if (type === 'mouseenter' || type === 'mouseleave') {
+                    if (type === 'mouseenter' || type === 'mouseleave') {         // mouseenter, mouseleave要修正成mouseover, mouseout
                         // Refer to jQuery's implementation of mouseenter & mouseleave
                         // Read about mouseenter and mouseleave:
                         // http://www.quirksmode.org/js/events_mouse.html#link8
@@ -3151,42 +3151,42 @@
                                 related = event.relatedTarget;
                             // For mousenter/leave call the handler if related is outside the target.
                             // NB: No relatedTarget if the mouse left/entered the browser window
-                            if (!related || (related !== target && !target.contains(related))) {
-                                handle(event, type);
-                            }
+                            if (!related || (related !== target && !target.contains(related))) {      // 从外部元素进入的
+                                handle(event, type);                                      // 直接执行主回调函数
+                            }     
                         });
 
                     } else {
-                        if (type !== '$destroy') {
-                            addEventListenerFn(element, type, handle);
+                        if (type !== '$destroy') {                              // 如果不是事件类型不是'$destroy'
+                            addEventListenerFn(element, type, handle);          // 绑定事件
                         }
                     }
-                    eventFns = events[type];
+                    eventFns = events[type];                                    // 重新赋值到eventFns
                 }
-                eventFns.push(fn);
+                eventFns.push(fn);                                              // 添加到eventFns上
             }
         },
 
-        off: jqLiteOff,
+        off: jqLiteOff,                                                         // 解除绑定
 
-        one: function(element, type, fn) {
+        one: function(element, type, fn) {                                      // 执行后马上解除绑定
             element = jqLite(element);
 
             //add the listener twice so that when it is called
             //you can remove the original function and still be
             //able to call element.off(ev, fn) normally
-            element.on(type, function onFn() {
-                element.off(type, fn);
+            element.on(type, function onFn() {                                  
+                element.off(type, fn);                                          // 在里面移除事件，再移除自身事件
                 element.off(type, onFn);
             });
             element.on(type, fn);
         },
 
-        replaceWith: function(element, replaceNode) {
+        replaceWith: function(element, replaceNode) {                           // 
             var index, parent = element.parentNode;
             jqLiteDealoc(element);
-            forEach(new JQLite(replaceNode), function(node) {
-                if (index) {
+            forEach(new JQLite(replaceNode), function(node) {                   // replaceNode转成JQLite对象, 
+                if (index) {                                                    
                     parent.insertBefore(node, index.nextSibling);
                 } else {
                     parent.replaceChild(node, element);

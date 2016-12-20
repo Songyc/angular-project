@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="sycs">
+		<div class="syc">syc</div>
+		<div class="syc">syc</div>
+		<div class="syc">syc</div>
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var div = document.createElement('div');
+	div.innerHTML = 1;
+	angular.element(document.querySelectorAll('.syc')).replaceWith(div);
+	</script>
+</body>
+</html>
