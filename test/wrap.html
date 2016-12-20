@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="element">
+		element
+	</div>
+	<div class="warpNode">
+		<div class="wrap">
+			wrap
+		</div>
+		<div class="node">
+			node
+		</div>
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	angular.element(document.querySelector('.element')).wrap(document.querySelector('.warpNode'));
+	</script>
+</body>
+</html>

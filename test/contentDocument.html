@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="test" id="test">
+		test-div
+	</div>
+	<iframe src="replaceWith.html" frameborder="0" width="1000" height="1000" id="iframe">
+		
+	</iframe>
+	<script>
+	var iframe = document.querySelector('#iframe');
+	var	iframeChild = iframe.contentDocument.querySelector('.sycs');
+	console.log(iframe, iframeChild);
+	</script>
+</body>
+</html>

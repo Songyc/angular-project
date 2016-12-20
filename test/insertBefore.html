@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="test">
+
+		<div class="child"></div>
+	</div>
+	<script>
+	document.querySelector('.test').insertBefore(document.createElement('div'), document.querySelector('.child'));
+	</script>
+</body>
+</html>

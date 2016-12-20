@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script src="../js/angular.js"></script>
+	<script>
+	var hashMap = new HashMap([1, {1:1}, {2:2}], true);
+	console.log(hashMap);
+
+	hashMap.put(3, 3);
+	console.log(hashMap);
+
+	var getHashMap = hashMap.get(3);
+	console.log(getHashMap);
+
+	hashMap.remove(3);
+	console.log(hashMap);
+	</script>
+</body>
+</html>

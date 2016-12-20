@@ -3182,7 +3182,7 @@
             element.on(type, fn);
         },
 
-        replaceWith: function(element, replaceNode) {                           // 
+        replaceWith: function(element, replaceNode) {                           // 代替node节点，被替换的节点会被删除
             var index, parent = element.parentNode;
             jqLiteDealoc(element);
             forEach(new JQLite(replaceNode), function(node) {                   // replaceNode转成JQLite对象, 
@@ -3195,7 +3195,7 @@
             });
         },
 
-        children: function(element) {
+        children: function(element) {                                           // 返回所有的子节点元素
             var children = [];
             forEach(element.childNodes, function(element) {
                 if (element.nodeType === NODE_TYPE_ELEMENT)
@@ -3204,11 +3204,11 @@
             return children;
         },
 
-        contents: function(element) {
+        contents: function(element) {                                           // 获取iframe的document子元素，或者子元素
             return element.contentDocument || element.childNodes || [];
         },
 
-        append: function(element, node) {
+        append: function(element, node) {                                       // element添加 node作为子元素
             var nodeType = element.nodeType;
             if (nodeType !== NODE_TYPE_ELEMENT && nodeType !== NODE_TYPE_DOCUMENT_FRAGMENT) return;
 
@@ -3220,46 +3220,46 @@
             }
         },
 
-        prepend: function(element, node) {
+        prepend: function(element, node) {                                      // 把node插入到element的第一个子元素之前
             if (element.nodeType === NODE_TYPE_ELEMENT) {
-                var index = element.firstChild;
-                forEach(new JQLite(node), function(child) {
-                    element.insertBefore(child, index);
+                var index = element.firstChild;                                 
+                forEach(new JQLite(node), function(child) {                      
+                    element.insertBefore(child, index);                         
                 });
             }
         },
-
-        wrap: function(element, wrapNode) {
-            wrapNode = jqLite(wrapNode).eq(0).clone()[0];
+    
+        wrap: function(element, wrapNode) {                                     // wrapNode作为element的父元素，包裹起element
+            wrapNode = jqLite(wrapNode).eq(0).clone()[0];                       // 先复制一份副本，因为replaceChild的第一个元素替换后会消失。
             var parent = element.parentNode;
             if (parent) {
-                parent.replaceChild(wrapNode, element);
+                parent.replaceChild(wrapNode, element);                         // wrapNode复制副本替换
             }
-            wrapNode.appendChild(element);
+            wrapNode.appendChild(element);                                      // 把element放到最后
         },
 
-        remove: jqLiteRemove,
+        remove: jqLiteRemove,                                                   // 移除元素    
 
-        detach: function(element) {
+        detach: function(element) {                                             // 移除元素，并删除数据缓存
             jqLiteRemove(element, true);
         },
-
-        after: function(element, newElement) {
+    
+        after: function(element, newElement) {                                  // 将newElement插入到element后面
             var index = element,
                 parent = element.parentNode;
             newElement = new JQLite(newElement);
 
             for (var i = 0, ii = newElement.length; i < ii; i++) {
                 var node = newElement[i];
-                parent.insertBefore(node, index.nextSibling);
+                parent.insertBefore(node, index.nextSibling);                   // 把node加到element的后面
                 index = node;
             }
         },
 
-        addClass: jqLiteAddClass,
-        removeClass: jqLiteRemoveClass,
+        addClass: jqLiteAddClass,                                               // 添加类名
+        removeClass: jqLiteRemoveClass,                                         // 删除类名
 
-        toggleClass: function(element, selector, condition) {
+        toggleClass: function(element, selector, condition) {                   // 增加或删除类名。condition指示添加还是删除类名。
             if (selector) {
                 forEach(selector.split(' '), function(className) {
                     var classCondition = condition;
@@ -3271,16 +3271,16 @@
             }
         },
 
-        parent: function(element) {
+        parent: function(element) {                                             // 获取父元素
             var parent = element.parentNode;
             return parent && parent.nodeType !== NODE_TYPE_DOCUMENT_FRAGMENT ? parent : null;
         },
 
-        next: function(element) {
+        next: function(element) {                                               // 获取下一个节点元素
             return element.nextElementSibling;
         },
 
-        find: function(element, selector) {
+        find: function(element, selector) {                                     // 查询标签名为selector的元素
             if (element.getElementsByTagName) {
                 return element.getElementsByTagName(selector);
             } else {
@@ -3288,12 +3288,12 @@
             }
         },
 
-        clone: jqLiteClone,
+        clone: jqLiteClone,                                                     // 克隆元素
+ 
+        triggerHandler: function(element, event, extraParameters) {             // 手动触发事件
 
-        triggerHandler: function(element, event, extraParameters) {
-
-            var dummyEvent, eventFnsCopy, handlerArgs;
-            var eventName = event.type || event;
+            var dummyEvent, eventFnsCopy, handlerArgs;                          // jqLite事件对象, 
+            var eventName = event.type || event;                                // 事件类型或者原生事件对象
             var expandoStore = jqLiteExpandoStore(element);
             var events = expandoStore && expandoStore.events;
             var eventFns = events && events[eventName];
@@ -3335,24 +3335,24 @@
             }
         }
     }, function(fn, name) {
-        /**
-         * chaining functions
-         */
-        JQLite.prototype[name] = function(arg1, arg2, arg3) {
-            var value;
+        /**                     jqLiteRemoveData(element, name), jqLiteOn(element, type, fn, unsupported), jqLiteOff(element, type, fn, unsupported)                        
+         * chaining functions   one(element, type, fn), replaceWith(element, replaceNode), children(element), contents(element), append(element, node)
+         */                  // prepend(element, node), wrap(element, wrapNode), remove(element, keepData), detach(element), after(element, newElement)
+        JQLite.prototype[name] = function(arg1, arg2, arg3) {   // addClass(element, cssClasses), removeClass(element, cssClasses), toggle(element, selector, condition) 
+            var value;                       // parent(element), next(element), find(element, selector), clone(element), triggerHandler(element, event, extraParameters) 
 
             for (var i = 0, ii = this.length; i < ii; i++) {
-                if (isUndefined(value)) {
-                    value = fn(this[i], arg1, arg2, arg3);
+                if (isUndefined(value)) {       
+                    value = fn(this[i], arg1, arg2, arg3);              // children, contents, parent, next, find, clone
                     if (isDefined(value)) {
                         // any function which returns a value needs to be wrapped
                         value = jqLite(value);
                     }
                 } else {
-                    jqLiteAddNodes(value, fn(this[i], arg1, arg2, arg3));
+                    jqLiteAddNodes(value, fn(this[i], arg1, arg2, arg3));       // 如果有返回值，第二次就直接加在jqLite实例value上
                 }
             }
-            return isDefined(value) ? value : this;
+            return isDefined(value) ? value : this;                     // 返回jqLite实例
         };
 
         // bind legacy bind/unbind to on/off
@@ -3373,38 +3373,38 @@
      *         The resulting string key is in 'type:hashKey' format.
      */
 
-    function hashKey(obj, nextUidFn) {
-        var key = obj && obj.$$hashKey;
+    function hashKey(obj, nextUidFn) {                      // 获取obj.$$hashKey           
+        var key = obj && obj.$$hashKey;                     // 如果obj有$$hashKey
 
-        if (key) {
-            if (typeof key === 'function') {
+        if (key) {                              
+            if (typeof key === 'function') {                // 并且是方法，执行并返回结果
                 key = obj.$$hashKey();
             }
             return key;
         }
 
-        var objType = typeof obj;
-        if (objType == 'function' || (objType == 'object' && obj !== null)) {
-            key = obj.$$hashKey = objType + ':' + (nextUidFn || nextUid)();
-        } else {
+        var objType = typeof obj;                           // 
+        if (objType == 'function' || (objType == 'object' && obj !== null)) {       // 如果Obj是函数或对象
+            key = obj.$$hashKey = objType + ':' + (nextUidFn || nextUid)();         // 执行参数nextUidFn或nextUid函数，以 type + ':' + hashKey保存在obj.$$hashKey中, hashKey记录对象的数量
+        } else {                                            // 否则认为obj是字串符。其中hashKey记录值
             key = objType + ':' + obj;
         }
 
-        return key;
+        return key;                                         // 以'type:hashKey'格式返回
     }
 
     /**
      * HashMap which can use objects as keys
      */
 
-    function HashMap(array, isolatedUid) {
+    function HashMap(array, isolatedUid) {                  // isolatedUid指示是否重新计算uid
         if (isolatedUid) {
             var uid = 0;
             this.nextUid = function() {
                 return ++uid;
             };
         }
-        forEach(array, this.put, this);
+        forEach(array, this.put, this);                     // 
     }
     HashMap.prototype = {
         /**
@@ -3412,8 +3412,8 @@
          * @param key key to store can be any type
          * @param value value to store can be any type
          */
-        put: function(key, value) {
-            this[hashKey(key, this.nextUid)] = value;
+        put: function(key, value) {                          // 以'type:hashKey'形式存储键值对
+            this[hashKey(key, this.nextUid)] = value;      
         },
 
         /**
@@ -3421,20 +3421,20 @@
          * @returns {Object} the value for the key
          */
         get: function(key) {
-            return this[hashKey(key, this.nextUid)];
+            return this[hashKey(key, this.nextUid)];        // 通过type:hashKey查询对应的value值
         },
 
         /**
          * Remove the key/value pair
          * @param key
          */
-        remove: function(key) {
+        remove: function(key) {                             // 通过Key值移除
             var value = this[key = hashKey(key, this.nextUid)];
             delete this[key];
             return value;
         }
     };
-
+    
     /**
      * @ngdoc function
      * @module ng

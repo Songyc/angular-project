@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div class="element">
+		element
+	</div>
+	<div class="node">
+		node
+	</div>
+	<script>
+	var element = document.querySelector('.element');
+	var node = document.querySelector('.node');
+
+	node.parentNode.replaceChild(node, element);
+	node.parentNode.appendChild(element);
+	</script>
+</body>
+</html>

@@ -10,11 +10,16 @@
 		<div class="syc">syc</div>
 		<div class="syc">syc</div>
 	</div>
+	<div class="sycs2">
+		<div class="syc2">syc</div>
+		<div class="syc2">syc</div>
+		<div class="syc2">syc</div>
+	</div>
 	<script src="../js/angular.js"></script>
 	<script>
 	var div = document.createElement('div');
 	div.innerHTML = 1;
-	angular.element(document.querySelectorAll('.syc')).replaceWith(div);
+	angular.element(document.querySelectorAll('.syc')).replaceWith(angular.element(document.querySelectorAll('.sycs2 .syc2')));
 	</script>
 </body>
 </html>
