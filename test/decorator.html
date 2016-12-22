@@ -8,20 +8,23 @@
 	<script src="../js/angular.js"></script>
 	<script>
 	createInjector();
-	
-	
-	var $get = provider('name', function testFn() {
-			return { $get: ['$injector', function ($injector) {
-				console.log('$get');
-				return {$get: '$get'};
-			}]}
-		})
 
-	decorator('name', function de() {
-		console.log('de');
+	var $get = provider('name', function testFn() {
+		return { $get: function ($injector) {
+			return {$get: '$get'};
+		}}
 	})
 
-	providerCache.nameProvider.$get();
+	console.log(providerCache.nameProvider.$get());
+
+	decorator('name', function de($delegate) {
+		console.log($delegate); 					// {$get: '$get'}
+		return 'xx';
+	})
+
+	console.log(providerCache.nameProvider.$get());
+
+	console.log(window.providerCache);
 	</script>
 </body>
 </html>

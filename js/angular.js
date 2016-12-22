@@ -1789,7 +1789,7 @@
         var $injectorMinErr = minErr('$injector');    // 创建$injector模块抛出异常
         var ngMinErr = minErr('ng');              // 创建ng模块抛出异常
 
-        function ensure(obj, name, factory) {
+        function ensure(obj, name, factory) {     // 在modules对象中注册模块，模块名/factory()返回值
             return obj[name] || (obj[name] = factory());        
         }
 
@@ -4132,18 +4132,18 @@
             instanceCache[name] = value;
         }
 
-        function decorator(serviceName, decorFn) {        // 
+        function decorator(serviceName, decorFn) {        // 装饰name + 'Provider'服务的工厂函数，并返回结果可作第一个参数$delegate传入到装饰函数decorFnm中
             var origProvider = providerInjector.get(serviceName + providerSuffix),        // 获取factoryFn执行值
                 orig$get = origProvider.$get;             // 获取执行值的$get值
 
             origProvider.$get = function() {              // 重写$get方法                  
-                var origInstance = instanceInjector.invoke(orig$get, origProvider);       // 执行orig$get, 获取返回值。以orig$get
-                return instanceInjector.invoke(decorFn, null, {
-                    $delegate: origInstance
+                var origInstance = instanceInjector.invoke(orig$get, origProvider);       // 执行orig$get, 获取返回值。
+                return instanceInjector.invoke(decorFn, null, {             // 执行decorFn, 返回decorFn的返回值
+                    $delegate: origInstance               // 将factoryFn执行值保存在对象上。
                 });
             };
         }
-        window.decorator = decorator;
+        
         ////////////////////////////////////
         // Module Loading
         ////////////////////////////////////
@@ -4152,37 +4152,37 @@
             var runBlocks = [],
                 moduleFn;
             forEach(modulesToLoad, function(module) {     // 
-                if (loadedModules.get(module)) return;
-                loadedModules.put(module, true);
+                if (loadedModules.get(module)) return;    // 说明已加载module，直接返回。
+                loadedModules.put(module, true);          // 如果是对象，以type + ':' + haskKey / true，如果是字符串，以type + ':' + module /true 的形式保存到loadedModules对象上。
 
-                function runInvokeQueue(queue) {
+                function runInvokeQueue(queue) {          // 注册queue数据队列的服务
                     var i, ii;
                     for (i = 0, ii = queue.length; i < ii; i++) {
                         var invokeArgs = queue[i],
-                            provider = providerInjector.get(invokeArgs[0]);
+                            provider = providerInjector.get(invokeArgs[0]);     // 获取注射器
 
-                        provider[invokeArgs[1]].apply(provider, invokeArgs[2]);
+                        provider[invokeArgs[1]].apply(provider, invokeArgs[2]);     // 在providerCache上注册 服务名/服务对象。例如ngLocale模块注册了$localeProvider
                     }
                 }
 
                 try {
-                    if (isString(module)) {
-                        moduleFn = angularModule(module);
-                        runBlocks = runBlocks.concat(loadModules(moduleFn.requires)).concat(moduleFn._runBlocks);
-                        runInvokeQueue(moduleFn._invokeQueue);
-                        runInvokeQueue(moduleFn._configBlocks);
-                    } else if (isFunction(module)) {
-                        runBlocks.push(providerInjector.invoke(module));
-                    } else if (isArray(module)) {
+                    if (isString(module)) {               // 如果module是字符串
+                        moduleFn = angularModule(module);     // 获取module模块对象
+                        runBlocks = runBlocks.concat(loadModules(moduleFn.requires)).concat(moduleFn._runBlocks);       // 先加载依赖模块的依赖模块，把它们统一加到runBlocks结尾
+                        runInvokeQueue(moduleFn._invokeQueue);    // 注入队列，把模块的注入
+                        runInvokeQueue(moduleFn._configBlocks);   // 配置块
+                    } else if (isFunction(module)) {              // 如果是函数，插入返回值到runBlocks队列中
+                        runBlocks.push(providerInjector.invoke(module));      
+                    } else if (isArray(module)) {                 // 如果是数组，插入最后一个元素的返回值到runBlocks队列中
                         runBlocks.push(providerInjector.invoke(module));
                     } else {
-                        assertArgFn(module, 'module');
+                        assertArgFn(module, 'module');            
                     }
                 } catch (e) {
-                    if (isArray(module)) {
-                        module = module[module.length - 1];
+                    if (isArray(module)) {              // 如果是数组, 取最后一个元素
+                        module = module[module.length - 1];   
                     }
-                    if (e.message && e.stack && e.stack.indexOf(e.message) == -1) {
+                    if (e.message && e.stack && e.stack.indexOf(e.message) == -1) {       // 
                         // Safari & FF's stack traces don't contain error.message content
                         // unlike those of Chrome and IE
                         // So if stack doesn't contain message, we create a new string that contains both.
@@ -4194,7 +4194,7 @@
                         module, e.stack || e.message || e);
                 }
             });
-            return runBlocks;
+            return runBlocks;           // 返回依赖数组
         }
         window.loadModules = loadModules;
         ////////////////////////////////////
@@ -4284,7 +4284,6 @@
     }
 
     createInjector.$$annotate = annotate;
-    window.createInjector = createInjector;
     /**
      * @ngdoc provider
      * @name $anchorScrollProvider
