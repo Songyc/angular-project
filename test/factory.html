@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script src="../js/angular.js"></script>
+	<script>
+	createInjector();
+
+	console.log(
+		factory('name', function testFn() {
+			// return arguments.callee.name;
+		}, false).$get()
+	);
+
+	console.log(
+		factory('name', [function testFn2() {
+			return arguments.callee.name;
+		}]).$get()
+	);
+	</script>
+</body>
+</html>

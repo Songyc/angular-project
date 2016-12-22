@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script src="../js/angular.js"></script>
+	<script>
+	createInjector();
+
+	console.log(
+		service('name22', function testFn($injector) {
+			return {$get: 'xxx'};
+		}).$get()
+	)
+	</script>
+</body>
+</html>

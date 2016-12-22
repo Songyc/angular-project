@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+
+	<!-- <div class="test" ng-controller="myController">
+		
+	</div> -->
+
+	<script src="../js/angular.js"></script>
+	<script>
+	// var app = angular.module('myApp', [])
+	// .controller('myController', ['$scope', function ($scope) {
+	// 	console.log($scope);
+	// }]);
+
+	createInjector();
+	function testFn($provide, $injector) {
+		console.log($provide, $injector);
+		return ({'$get': 'testFn'});
+	}
+	console.log(provider('name', testFn));
+
+	</script>
+</body>
+</html>

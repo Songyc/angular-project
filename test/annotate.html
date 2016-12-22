@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script src="../js/angular.js"></script>
+	<script>
+	var fn = function ( arg1, _arg2, arg3 ) {}
+
+	console.log(annotate(fn, false, null));  // 以数组的形式返回所有参数
+
+	var fn1 = [function fx1() {}, function fx2() {}]
+
+	console.log(annotate(fn1, false, null)); // 去掉fn1最后一个元素
+
+	var fn2 = 'string';
+
+	console.log(annotate(fn2, false, null)); // 如果不是数组或函数，抛出异常
+	</script>
+</body>
+</html>

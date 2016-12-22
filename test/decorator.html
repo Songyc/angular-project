@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script src="../js/angular.js"></script>
+	<script>
+	createInjector();
+	
+	
+	var $get = provider('name', function testFn() {
+			return { $get: ['$injector', function ($injector) {
+				console.log('$get');
+				return {$get: '$get'};
+			}]}
+		})
+
+	decorator('name', function de() {
+		console.log('de');
+	})
+
+	providerCache.nameProvider.$get();
+	</script>
+</body>
+</html>
