@@ -4295,7 +4295,7 @@
 
     function $AnchorScrollProvider() {
 
-        var autoScrollingEnabled = true;
+        var autoScrollingEnabled = true;              // 能够自动滚动
 
         /**
          * @ngdoc method
@@ -4310,7 +4310,7 @@
          * {@link ng.$anchorScroll $anchorScroll()} in order to scroll to the element related to the
          * current hash.
          */
-        this.disableAutoScrolling = function() {
+        this.disableAutoScrolling = function() {      // 不能自动滚动
             autoScrollingEnabled = false;
         };
 
