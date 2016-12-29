@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body ng-app="myApp">
+	<div class="test" ng-controller="myController">
+		test
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var app = angular.module('myApp', []);
+	app.controller('myController', ['$scope', function ($scope) {
+		console.log($scope);
+	}]);
+	</script>
+</body>
+</html>
