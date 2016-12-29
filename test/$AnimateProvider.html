@@ -8,11 +8,53 @@
 	<div class="test" ng-controller="myController">
 		test
 	</div>
+
+  <div class="test-enter">
+    <div class="child1">
+      child1
+    </div>
+    <div class="child2">
+      child2
+    </div>
+    <div class="child3">
+      child3
+    </div>
+  </div>
 	<script src="../js/angular.js"></script>
 	<script>
 	var app = angular.module('myApp', []);
-	app.controller('myController', ['$scope', function ($scope) {
-		console.log($scope);
+	app.controller('myController', ['$scope', '$animate', function ($scope, $animate) {
+		  providerCache.$animateProvider.register('.test', function () {
+          return '123';
+      });
+      console.log(providerCache['.test-animationProvider'].$get());
+
+      console.log(providerCache.$animateProvider.classNameFilter());
+
+      console.log($animate);
+
+      $animate.animate( 
+        angular.element(document.querySelector('.test')),
+        {background: "none"}, 
+          {background: "red"}
+      );
+
+      $animate.enter(
+        angular.element(document.querySelector('.child1')),
+        angular.element(document.querySelector('.child2'))
+      )
+
+      $animate.leave(
+        angular.element(document.querySelector('.child1'))
+      )
+
+      $animate.addClass(
+        angular.element(document.querySelector('.child2')),
+        'extra',
+        {
+
+        }
+      )
 	}]);
 	</script>
 </body>

@@ -2245,12 +2245,13 @@
             angularModule('ngLocale', []).provider('$locale', $LocaleProvider);     // 创建ngLocale模块，模块实例对象调用provider把['$provider', 'provider', ['$locale', $LocaleProvider]]加入到模块实例对象ngLocale.invokeQueue中
         }
 
-        angularModule('ng', ['ngLocale'], ['$provide',          // 创建模块对象ng, 依赖ngLocale, ['$injector', 'invoke', ['$provide', ngModule]]加入到模块实例对象ng._configBlocks中
+        window.ng = angularModule('ng', ['ngLocale'], ['$provide',          // 创建模块对象ng, 依赖ngLocale, ['$injector', 'invoke', ['$provide', ngModule]]加入到模块实例对象ng._configBlocks中
             function ngModule($provide) {
                 // $$sanitizeUriProvider needs to be before $compileProvider as it is used by it.
                 $provide.provider({
                     $$sanitizeUri: $$SanitizeUriProvider
                 });
+                // $provide.provider('$provider', $provide.provider);
                 $provide.provider('$compile', $CompileProvider).
                 directive({
                     a: htmlAnchorDirective,
@@ -4095,6 +4096,9 @@
             if (!provider_.$get) {                      // 返回值必须有$get工厂方法
                 throw $injectorMinErr('pget', "Provider '{0}' must define $get factory method.", name);
             }
+            if(name == '$$sanitizeUri') {
+              window.providerCache = providerCache;
+            }
             return providerCache[name + providerSuffix] = provider_;    // 以name + 'Provider'保存provider_到providerCache上
         }
         window.provider = provider;
@@ -4451,7 +4455,7 @@
        </file>
      </example>
    */
-        this.$get = ['$window', '$location', '$rootScope',              // 依赖注入
+        this.$get = ['$window', '$location', '$rootScope',              // 依赖注入'window', '$location', 'rootScope'
             function($window, $location, $rootScope) {                  // 
                 var document = $window.document;
                 var scrollScheduled = false;                            // 滚动计划
@@ -4611,12 +4615,12 @@
              * @param {Function} factory The factory function that will be executed to return the animation
              *                           object.
              */
-            this.register = function(name, factory) {
+            this.register = function(name, factory) {       // 注册动画。动画名要以'.'开头，factory工厂函数。
                 var key = name + '-animation';
-                if (name && name.charAt(0) != '.') throw $animateMinErr('notcsel',
+                if (name && name.charAt(0) != '.') throw $animateMinErr('notcsel',    
                     "Expecting class selector starting with '.' got '{0}'.", name);
-                this.$$selectors[name.substr(1)] = key;
-                $provide.factory(key, factory);
+                this.$$selectors[name.substr(1)] = key;     // 保存动画在$$selectors上，形式为类名/类名 + '-animation'
+                $provide.factory(key, factory);             // 调用factory，factory必须有返回值。在ng模块的providerCache上注册 key + 'Provider'/factory, 比如，name为'.test', 则为'.test-animationProvider' / factory
             };
 
             /**
@@ -4633,25 +4637,25 @@
              * @param {RegExp=} expression The className expression which will be checked against all animations
              * @return {RegExp} The current CSS className expression value. If null then there is no expression value
              */
-            this.classNameFilter = function(expression) {
+            this.classNameFilter = function(expression) {     // 如果只有一个参数，并且expression是正则，则$$classNameFilter为expression。否则返回$$classNameFilter
                 if (arguments.length === 1) {
                     this.$$classNameFilter = (expression instanceof RegExp) ? expression : null;
                 }
-                return this.$$classNameFilter;
+                return this.$$classNameFilter;                // 返回$$classNameFilter
             };
 
             this.$get = ['$$q', '$$asyncCallback', '$rootScope',
-                function($$q, $$asyncCallback, $rootScope) {
+                function($$q, $$asyncCallback, $rootScope) {        // 
 
                     var currentDefer;
 
                     function runAnimationPostDigest(fn) {
-                        var cancelFn, defer = $$q.defer();
-                        defer.promise.$$cancelFn = function ngAnimateMaybeCancel() {
+                        var cancelFn, defer = $$q.defer();          // 返回一个异步对象defer
+                        defer.promise.$$cancelFn = function ngAnimateMaybeCancel() {    // 设置defer.promise.$$cancelFn 取消方法
                             cancelFn && cancelFn();
                         };
 
-                        $rootScope.$$postDigest(function ngAnimatePostDigest() {
+                        $rootScope.$$postDigest(function ngAnimatePostDigest() {        // 执行$$postDigest, 将方法ngAnimatePostDigest加入到postDigestQueue队列
                             cancelFn = fn(function ngAnimateNotifyComplete() {
                                 defer.resolve();
                             });
@@ -4660,7 +4664,7 @@
                         return defer.promise;
                     }
 
-                    function resolveElementClasses(element, classes) {
+                    function resolveElementClasses(element, classes) {        // 返回一个数组，如果需要添加类名，第一个元素为toAdd，第二个toRemove
                         var toAdd = [],
                             toRemove = [];
 
@@ -4687,29 +4691,29 @@
                             [toAdd.length ? toAdd : null, toRemove.length ? toRemove : null];
                     }
 
-                    function cachedClassManipulation(cache, classes, op) {
+                    function cachedClassManipulation(cache, classes, op) {          // 以类名/op的形式存储classe中所有类名到cache对象中
                         for (var i = 0, ii = classes.length; i < ii; ++i) {
                             var className = classes[i];
                             cache[className] = op;
                         }
                     }
 
-                    function asyncPromise() {
+                    function asyncPromise() {         // 异步对象
                         // only serve one instance of a promise in order to save CPU cycles
-                        if (!currentDefer) {
-                            currentDefer = $$q.defer();
-                            $$asyncCallback(function() {
-                                currentDefer.resolve();
-                                currentDefer = null;
+                        if (!currentDefer) {                          // 如果没有当前的异步对象
+                            currentDefer = $$q.defer();               // 调用$$q.defer()创建
+                            $$asyncCallback(function() {              // 调用$$asyncCallback执行回调函数
+                                currentDefer.resolve();               // 执行成功回调函数
+                                currentDefer = null;                  // 把currentDefer设置为null
                             });
                         }
-                        return currentDefer.promise;
+                        return currentDefer.promise;        // 返回异步对象
                     }
 
-                    function applyStyles(element, options) {
-                        if (angular.isObject(options)) {
-                            var styles = extend(options.from || {}, options.to || {});
-                            element.css(styles);
+                    function applyStyles(element, options) {        // 设置属性
+                        if (angular.isObject(options)) {            // 如果是对象
+                            var styles = extend(options.from || {}, options.to || {});    // 把to覆盖到from上
+                            element.css(styles);                    // 调用.css设置为to属性
                         }
                     }
 
@@ -4731,12 +4735,12 @@
                      * page}.
                      */
                     return {
-                        animate: function(element, from, to) {
+                        animate: function(element, from, to) {          // 定义起点样式和终点样式
                             applyStyles(element, {
                                 from: from,
                                 to: to
                             });
-                            return asyncPromise();
+                            return asyncPromise();                      // 返回异步对象
                         },
 
                         /**
@@ -4755,9 +4759,9 @@
                          * @param {object=} options an optional collection of styles that will be applied to the element.
                          * @return {Promise} the animation callback promise
                          */
-                        enter: function(element, parent, after, options) {
+                        enter: function(element, parent, after, options) {          // element放在parent里，或者放在after后面，支持改变样式
                             applyStyles(element, options);
-                            after ? after.after(element) : parent.prepend(element);
+                            after ? after.after(element) : parent.prepend(element);   // 如果有after， 把element放在after后面，否则把element放在parent里
                             return asyncPromise();
                         },
 
@@ -4772,7 +4776,7 @@
                          * @param {object=} options an optional collection of options that will be applied to the element.
                          * @return {Promise} the animation callback promise
                          */
-                        leave: function(element, options) {
+                        leave: function(element, options) {           // 删除element 
                             element.remove();
                             return asyncPromise();
                         },
@@ -4795,10 +4799,10 @@
                          * @param {object=} options an optional collection of options that will be applied to the element.
                          * @return {Promise} the animation callback promise
                          */
-                        move: function(element, parent, after, options) {
+                        move: function(element, parent, after, options) {         // 和enter一样
                             // Do not remove element before insert. Removing will cause data associated with the
                             // element to be dropped. Insert will implicitly do the remove.
-                            return this.enter(element, parent, after, options);
+                            return this.enter(element, parent, after, options);   
                         },
 
                         /**
@@ -4814,17 +4818,17 @@
                          * @param {object=} options an optional collection of options that will be applied to the element.
                          * @return {Promise} the animation callback promise
                          */
-                        addClass: function(element, className, options) {
+                        addClass: function(element, className, options) {         // 添加类名
                             return this.setClass(element, className, [], options);
                         },
 
-                        $$addClassImmediately: function(element, className, options) {
+                        $$addClassImmediately: function(element, className, options) {    // element添加类名，改变element元素样式
                             element = jqLite(element);
-                            className = !isString(className) ? (isArray(className) ? className.join(' ') : '') : className;
-                            forEach(element, function(element) {
+                            className = !isString(className) ? (isArray(className) ? className.join(' ') : '') : className;     // 统一转成字符串
+                            forEach(element, function(element) {          // 添加类名
                                 jqLiteAddClass(element, className);
                             });
-                            applyStyles(element, options);
+                            applyStyles(element, options);                // 改变元素样式
                             return asyncPromise();
                         },
 
@@ -4841,11 +4845,11 @@
                          * @param {object=} options an optional collection of options that will be applied to the element.
                          * @return {Promise} the animation callback promise
                          */
-                        removeClass: function(element, className, options) {
+                        removeClass: function(element, className, options) {          // 删除类名
                             return this.setClass(element, [], className, options);
                         },
 
-                        $$removeClassImmediately: function(element, className, options) {
+                        $$removeClassImmediately: function(element, className, options) {     // element删除类名，改变element元素样式
                             element = jqLite(element);
                             className = !isString(className) ? (isArray(className) ? className.join(' ') : '') : className;
                             forEach(element, function(element) {
@@ -4875,69 +4879,69 @@
                             var createdCache = false;
                             element = jqLite(element);
 
-                            var cache = element.data(STORAGE_KEY);
-                            if (!cache) {
+                            var cache = element.data(STORAGE_KEY);            // 如果没有缓存，创建一个，包含有classes类对象，options对象
+                            if (!cache) { 
                                 cache = {
                                     classes: {},
                                     options: options
                                 };
                                 createdCache = true;
-                            } else if (options && cache.options) {
+                            } else if (options && cache.options) {            // 如果有，把options合并到cache.options中
                                 cache.options = angular.extend(cache.options || {}, options);
                             }
 
                             var classes = cache.classes;
 
-                            add = isArray(add) ? add : add.split(' ');
-                            remove = isArray(remove) ? remove : remove.split(' ');
-                            cachedClassManipulation(classes, add, true);
-                            cachedClassManipulation(classes, remove, false);
+                            add = isArray(add) ? add : add.split(' ');        // 统一将add, remove转成数组
+                            remove = isArray(remove) ? remove : remove.split(' ');    
+                            cachedClassManipulation(classes, add, true);       // 在classes中存储add中所有的类名，并设置为true
+                            cachedClassManipulation(classes, remove, false);   // 在classes中存储remove中所有的类名，并设置为false
 
-                            if (createdCache) {
-                                cache.promise = runAnimationPostDigest(function(done) {
-                                    var cache = element.data(STORAGE_KEY);
-                                    element.removeData(STORAGE_KEY);
+                            if (createdCache) {                                 // 如果是新创建的缓存 
+                                cache.promise = runAnimationPostDigest(function(done) {       // 完成动画函数
+                                    var cache = element.data(STORAGE_KEY);      // 取缓存 
+                                    element.removeData(STORAGE_KEY);            // 清除缓存
 
                                     // in the event that the element is removed before postDigest
                                     // is run then the cache will be undefined and there will be
                                     // no need anymore to add or remove and of the element classes
-                                    if (cache) {
-                                        var classes = resolveElementClasses(element, cache.classes);
+                                    if (cache) {                                // 元素被删除，就不需要添加或删除类
+                                        var classes = resolveElementClasses(element, cache.classes);      // 获取方法名数组
                                         if (classes) {
-                                            self.$$setClassImmediately(element, classes[0], classes[1], cache.options);
+                                            self.$$setClassImmediately(element, classes[0], classes[1], cache.options);     // 调用$$setClassImmediately()
                                         }
                                     }
 
-                                    done();
+                                    done();                                     // 执行完成函数()
                                 });
-                                element.data(STORAGE_KEY, cache);
+                                element.data(STORAGE_KEY, cache);               // 缓存
                             }
 
                             return cache.promise;
                         },
 
-                        $$setClassImmediately: function(element, add, remove, options) {
+                        $$setClassImmediately: function(element, add, remove, options) {    // 立即设置类名 
                             add && this.$$addClassImmediately(element, add);
                             remove && this.$$removeClassImmediately(element, remove);
                             applyStyles(element, options);
                             return asyncPromise();
                         },
 
-                        enabled: noop,
-                        cancel: noop
+                        enabled: noop,      // 空方法
+                        cancel: noop        // 空方法
                     };
                 }
             ];
         }
     ];
 
-    function $$AsyncCallbackProvider() {
+    function $$AsyncCallbackProvider() {      // 异步回调供应。如果没有返回值，则返回$$AsyncCallbackProvider实例。注入'$$rAF', '$timeout'
         this.$get = ['$$rAF', '$timeout',
-            function($$rAF, $timeout) {
-                return $$rAF.supported ? function(fn) {
+            function($$rAF, $timeout) {     
+                return $$rAF.supported ? function(fn) {       // 如果$$rAF.supported为true, 返回一个函数，执行$$rAF。
                     return $$rAF(fn);
                 } : function(fn) {
-                    return $timeout(fn, 0, false);
+                    return $timeout(fn, 0, false);            // 否则执行$timeout(fn, 0, false)。
                 };
             }
         ];
@@ -4968,7 +4972,7 @@
      * @param {object} $sniffer $sniffer service
      */
 
-    function Browser(window, document, $log, $sniffer) {
+    function Browser(window, document, $log, $sniffer) {      // 浏览器类
         var self = this,
             rawDocument = document[0],
             location = window.location,
@@ -4977,14 +4981,14 @@
             clearTimeout = window.clearTimeout,
             pendingDeferIds = {};
 
-        self.isMock = false;
+        self.isMock = false;            // 模拟的
 
-        var outstandingRequestCount = 0;
-        var outstandingRequestCallbacks = [];
+        var outstandingRequestCount = 0;              // 外请求数量
+        var outstandingRequestCallbacks = [];         // 外请求回调函数
 
         // TODO(vojta): remove this temporary api
-        self.$$completeOutstandingRequest = completeOutstandingRequest;
-        self.$$incOutstandingRequestCount = function() {
+        self.$$completeOutstandingRequest = completeOutstandingRequest;     // 完成请求方法
+        self.$$incOutstandingRequestCount = function() {      // 记录请求数，完成请求自加1
             outstandingRequestCount++;
         };
 
@@ -4993,15 +4997,15 @@
          * counter. If the counter reaches 0, all the `outstandingRequestCallbacks` are executed.
          */
 
-        function completeOutstandingRequest(fn) {
+        function completeOutstandingRequest(fn) {             // 
             try {
-                fn.apply(null, sliceArgs(arguments, 1));
+                fn.apply(null, sliceArgs(arguments, 1));      // 执行fn，参数从第二个开始
             } finally {
-                outstandingRequestCount--;
-                if (outstandingRequestCount === 0) {
-                    while (outstandingRequestCallbacks.length) {
+                outstandingRequestCount--;                    // 请求数减1
+                if (outstandingRequestCount === 0) {          // 如果为0，表示所有请求执行完
+                    while (outstandingRequestCallbacks.length) {        // 执行完成函数并出队  
                         try {
-                            outstandingRequestCallbacks.pop()();
+                            outstandingRequestCallbacks.pop()();        
                         } catch (e) {
                             $log.error(e);
                         }

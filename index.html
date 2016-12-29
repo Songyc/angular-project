@@ -4,12 +4,17 @@
 </head>
 <body ng-app="myApp">
 	<div class="test" ng-controller="PhoneListCtrl">
-		{{syc}}
+		
 	</div>
   	<script>
-  	angular.module('myApp').controller('PhoneListCtrl', ['$scope', function ($scope) {
-  		$scope.syc = 'syc';
-  	}])
+  	angular.module('myApp', []).controller('PhoneListCtrl', ['$animate', function ($animateProvider) {
+  
+  		providerCache.$animateProvider.register('.test', function () {
+  			return '123';
+  		});
+  		console.log(providerCache['.test-animationProvider'].$get());
+  		
+  	}]);
   	</script>
 </body>
 </html>
