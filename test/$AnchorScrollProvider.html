@@ -3,11 +3,46 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<style>
+	*{margin:0;}
+	#scrollArea {
+       height: 280px;
+       overflow: auto;
+     }
+
+     #bottom {
+       display: block;
+       margin-top: 2000px;
+     }
+	</style>
 </head>
-<body>
+<body ng-app="myApp">
+	<br />
+   <div class="alert alert-warning">
+   In order for `yOffset` to work properly, scrolling should take place on the document's root and
+   not some child element.
+   </div>
+   <div id="scrollArea" ng-controller="ScrollController">
+           <a ng-click="gotoBottom()">Go to bottom</a>
+           <a id="bottom"></a> You're at the bottom!
+    </div>
 	<script src="../js/angular.js"></script>
 	<script>
-	
+
+	var app = angular.module('myApp', []);
+
+	app.controller('ScrollController', ['$scope', '$location', '$anchorScroll',
+        function ($scope, $location, $anchorScroll) {
+           	$scope.gotoBottom = function() {
+             	// set the location.hash to the id of
+             	// the element you wish to scroll to.
+             	$location.hash('bottom');
+             	// call $anchorScroll()
+             	$anchorScroll();
+        	};
+    }])
+	// createInjector();
+	// console.log({obj: providerCache});
 	</script>
 </body>
 </html>

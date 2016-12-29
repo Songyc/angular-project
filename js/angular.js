@@ -4282,7 +4282,7 @@
 
         return instanceInjector;
     }
-
+    window.createInjector = createInjector;
     createInjector.$$annotate = annotate;
     /**
      * @ngdoc provider
@@ -4451,18 +4451,18 @@
        </file>
      </example>
    */
-        this.$get = ['$window', '$location', '$rootScope',
-            function($window, $location, $rootScope) {
+        this.$get = ['$window', '$location', '$rootScope',              // 依赖注入
+            function($window, $location, $rootScope) {                  // 
                 var document = $window.document;
-                var scrollScheduled = false;
+                var scrollScheduled = false;                            // 滚动计划
 
                 // Helper function to get first anchor from a NodeList
                 // (using `Array#some()` instead of `angular#forEach()` since it's more performant
                 //  and working in all supported browsers.)
 
-                function getFirstAnchor(list) {
+                function getFirstAnchor(list) {                         // 获取第一个锚点(a标签)
                     var result = null;
-                    Array.prototype.some.call(list, function(element) {
+                    Array.prototype.some.call(list, function(element) {       // 获取a标签
                         if (nodeName_(element) === 'a') {
                             result = element;
                             return true;
@@ -4471,13 +4471,13 @@
                     return result;
                 }
 
-                function getYOffset() {
+                function getYOffset() {                                 // 获取scrollY滚动值
 
                     var offset = scroll.yOffset;
 
-                    if (isFunction(offset)) {
+                    if (isFunction(offset)) {                           // 如果是函数，返回执行值
                         offset = offset();
-                    } else if (isElement(offset)) {
+                    } else if (isElement(offset)) {                     // 如果是fixed元素, 调用getBoundingClientRect()获取元素到窗口顶部的高度。如果不是fixed元素，返回0。
                         var elem = offset[0];
                         var style = $window.getComputedStyle(elem);
                         if (style.position !== 'fixed') {
@@ -4485,20 +4485,20 @@
                         } else {
                             offset = elem.getBoundingClientRect().bottom;
                         }
-                    } else if (!isNumber(offset)) {
+                    } else if (!isNumber(offset)) {                   // 如果不是数字，返回0
                         offset = 0;
                     }
 
                     return offset;
                 }
-
-                function scrollTo(elem) {
+                window.getYOffset = getYOffset;
+                function scrollTo(elem) {                             // 滚动到元素处或者返回顶部
                     if (elem) {
-                        elem.scrollIntoView();
+                        elem.scrollIntoView();                        // 让元素elem滚动到可视区域
 
-                        var offset = getYOffset();
+                        var offset = getYOffset();                    // 调用getYOffset()，获取scrollY滚动值
 
-                        if (offset) {
+                        if (offset) {                                 // 如果不为0
                             // `offset` is the number of pixels we should scroll UP in order to align `elem` properly.
                             // This is true ONLY if the call to `elem.scrollIntoView()` initially aligns `elem` at the
                             // top of the viewport.
@@ -4512,14 +4512,14 @@
                             // In such cases we do not need to scroll the whole `offset` up, just the difference between
                             // the top of the element and the offset, which is enough to align the top of `elem` at the
                             // desired position.
-                            var elemTop = elem.getBoundingClientRect().top;
-                            $window.scrollBy(0, elemTop - offset);
+                            var elemTop = elem.getBoundingClientRect().top;       // 获取了元素高到文档左上角的距离
+                            $window.scrollBy(0, elemTop - offset);                // 滚动到获取滚动条的高
                         }
                     } else {
-                        $window.scrollTo(0, 0);
+                        $window.scrollTo(0, 0);                       // 否则返回页面顶部
                     }
                 }
-
+               
                 function scroll() {
                     var hash = $location.hash(),
                         elm;
@@ -4557,7 +4557,7 @@
             }
         ];
     }
-
+    window.$AnchorScrollProvider = $AnchorScrollProvider;
     var $animateMinErr = minErr('$animate');
 
     /**
