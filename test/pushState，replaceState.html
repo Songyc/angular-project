@@ -1,0 +1,31 @@
+<!DOCTYPE html> 
+<html>
+<head>
+	<meta charset="utf-8">
+	<script type="text/javascript">
+		var id = 0;
+		window.onpopstate = function(e){
+			if(history.state){
+				var state = history.state;
+				console.log(id);
+			}
+		}
+				
+		function toPushState(){
+			id++;
+			console.log(id);
+			history.pushState({"id":"pushState"}, "", "");
+		}
+
+		function toReplaceState() {
+			id++;
+			console.log(id);
+			history.replaceState({"id": "replaceState"}, "", "");
+		}
+	</script>
+</head> 
+<body>
+	<input type="button" value="pushState" onclick="toPushState();">
+	<input type="button" value="replaceState" onclick="toReplaceState();">
+</body>
+</html>

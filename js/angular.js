@@ -4984,7 +4984,7 @@
         self.isMock = false;            // 模拟的
 
         var outstandingRequestCount = 0;              // 外请求数量
-        var outstandingRequestCallbacks = [];         // 外请求回调函数
+        var outstandingRequestCallbacks = [];         // 外请求回调函数队列
 
         // TODO(vojta): remove this temporary api
         self.$$completeOutstandingRequest = completeOutstandingRequest;     // 完成请求方法
@@ -4997,7 +4997,7 @@
          * counter. If the counter reaches 0, all the `outstandingRequestCallbacks` are executed.
          */
 
-        function completeOutstandingRequest(fn) {             // 
+        function completeOutstandingRequest(fn) {             // 完成请求回调函数
             try {
                 fn.apply(null, sliceArgs(arguments, 1));      // 执行fn，参数从第二个开始
             } finally {
@@ -5020,18 +5020,18 @@
          * TODO(vojta): prefix this method with $$ ?
          * @param {function()} callback Function that will be called when no outstanding request
          */
-        self.notifyWhenNoOutstandingRequests = function(callback) {
+        self.notifyWhenNoOutstandingRequests = function(callback) {         // 没有outstanding request时执行。强制执行所有的   
             // force browser to execute all pollFns - this is needed so that cookies and other pollers fire
             // at some deterministic time in respect to the test runner's actions. Leaving things up to the
             // regular poller would result in flaky tests.
-            forEach(pollFns, function(pollFn) {
+            forEach(pollFns, function(pollFn) {                 // 遍历轮询器，执行所有pollFns上的函数
                 pollFn();
             });
 
-            if (outstandingRequestCount === 0) {
+            if (outstandingRequestCount === 0) {                // 如果outstandingRequestCount为0，表示所有请求执行完，执行callback();
                 callback();
             } else {
-                outstandingRequestCallbacks.push(callback);
+                outstandingRequestCallbacks.push(callback);     // 否则把callback加入到请求回调函数队列中
             }
         };
 
@@ -5052,10 +5052,10 @@
          *
          * @returns {function()} the added function
          */
-        self.addPollFn = function(fn) {
-            if (isUndefined(pollTimeout)) startPoller(100, setTimeout);
-            pollFns.push(fn);
-            return fn;
+        self.addPollFn = function(fn) {                         // 为实例自定义方法addPollFn。执行完pollFns，定义pollTimeout定时器，把fn插入到pollFns中。
+            if (isUndefined(pollTimeout)) startPoller(100, setTimeout);   // 如果pollTimeout没有定义，说明pollFns还没执行，调用startPoller执行，并设置定时器pollTimeout，100毫秒后执行check函数
+            pollFns.push(fn);                                   // 把fn插入到pollFns中
+            return fn;                                          // 返回 fn。
         };
 
         /**
@@ -5067,12 +5067,12 @@
          * setTimeout fn and kicks it off.
          */
 
-        function startPoller(interval, setTimeout) {
+        function startPoller(interval, setTimeout) {            // 开始执行Poller。
             (function check() {
-                forEach(pollFns, function(pollFn) {
+                forEach(pollFns, function(pollFn) {             // 执行所有pollFn
                     pollFn();
                 });
-                pollTimeout = setTimeout(check, interval);
+                pollTimeout = setTimeout(check, interval);      // 定义定时器pollTimeout
             })();
         }
 
@@ -5080,13 +5080,13 @@
         // URL API
         //////////////////////////////////////////////////////////////
 
-        var cachedState, lastHistoryState,
-            lastBrowserUrl = location.href,
-            baseElement = document.find('base'),
-            reloadLocation = null;
+        var cachedState, lastHistoryState,                      // 
+            lastBrowserUrl = location.href,                     // 
+            baseElement = document.find('base'),                // base元素
+            reloadLocation = null;                              // 
 
-        cacheState();
-        lastHistoryState = cachedState;
+        cacheState();                                           // 缓存当前浏览器历史状态cachedState
+        lastHistoryState = cachedState;                         // 将cachedState赋值给lastHistoryState
 
         /**
          * @name $browser#url
@@ -5108,7 +5108,7 @@
          * @param {boolean=} replace Should new url replace current history record?
          * @param {object=} state object to use with pushState/replaceState
          */
-        self.url = function(url, replace, state) {
+        self.url = function(url, replace, state) {               // 
             // In modern browsers `history.state` is `null` by default; treating it separately
             // from `undefined` would cause `$browser.url('/foo')` to change `history.state`
             // to undefined via `pushState`. Instead, let's change `undefined` to `null` here.
@@ -5117,17 +5117,17 @@
             }
 
             // Android Browser BFCache causes location, history reference to become stale.
-            if (location !== window.location) location = window.location;
+            if (location !== window.location) location = window.location;         // 因为安卓手机缓存问题，需要重新获取
             if (history !== window.history) history = window.history;
 
             // setter
-            if (url) {
-                var sameState = lastHistoryState === state;
+            if (url) {                    // 
+                var sameState = lastHistoryState === state;               // 如果历史状态相等
 
                 // Don't change anything if previous and current URLs and states match. This also prevents
                 // IE<10 from getting into redirect loop when in LocationHashbangInHtml5Url mode.
                 // See https://github.com/angular/angular.js/commit/ffb2701
-                if (lastBrowserUrl === url && (!$sniffer.history || sameState)) {
+                if (lastBrowserUrl === url && (!$sniffer.history || sameState)) {     // 
                     return;
                 }
                 var sameBase = lastBrowserUrl && stripHash(lastBrowserUrl) === stripHash(url);
@@ -5187,19 +5187,19 @@
         // This variable should be used *only* inside the cacheState function.
         var lastCachedState = null;
 
-        function cacheState() {
+        function cacheState() {         // 缓存浏览器状态
             // This should be the only place in $browser where `history.state` is read.
-            cachedState = window.history.state;
-            cachedState = isUndefined(cachedState) ? null : cachedState;
+            cachedState = window.history.state;         
+            cachedState = isUndefined(cachedState) ? null : cachedState;      
 
             // Prevent callbacks fo fire twice if both hashchange & popstate were fired.
-            if (equals(cachedState, lastCachedState)) {
+            if (equals(cachedState, lastCachedState)) {         // 比较两个状态，如果相等，把lastCachedState作为cachedState
                 cachedState = lastCachedState;
             }
-            lastCachedState = cachedState;
+            lastCachedState = cachedState;      // 将当前cachedState作为lastCachedState上一次缓存
         }
 
-        function fireUrlChange() {
+        function fireUrlChange() {              // 
             if (lastBrowserUrl === self.url() && lastHistoryState === cachedState) {
                 return;
             }
@@ -15961,26 +15961,26 @@
      * This is very simple implementation of testing browser's features.
      */
 
-    function $SnifferProvider() {
+    function $SnifferProvider() {                         // $SnifferProvider嗅探器
         this.$get = ['$window', '$document',
-            function($window, $document) {
-                var eventSupport = {},
-                    android =
+            function($window, $document) {                
+                var eventSupport = {},                    // 事件支持对象
+                    android =                             // 支持安卓
                         int((/android (\d+)/.exec(lowercase(($window.navigator || {}).userAgent)) || [])[1]),
-                    boxee = /Boxee/i.test(($window.navigator || {}).userAgent),
-                    document = $document[0] || {},
-                    vendorPrefix,
-                    vendorRegex = /^(Moz|webkit|O|ms)(?=[A-Z])/,
-                    bodyStyle = document.body && document.body.style,
-                    transitions = false,
+                    boxee = /Boxee/i.test(($window.navigator || {}).userAgent),     // boxee操作系统
+                    document = $document[0] || {},        
+                    vendorPrefix,                         // 提供商前缀
+                    vendorRegex = /^(Moz|webkit|O|ms)(?=[A-Z])/,      // 正则
+                    bodyStyle = document.body && document.body.style,   
+                    transitions = false,                    
                     animations = false,
                     match;
 
-                if (bodyStyle) {
+                if (bodyStyle) {                  
                     for (var prop in bodyStyle) {
-                        if (match = vendorRegex.exec(prop)) {
-                            vendorPrefix = match[0];
-                            vendorPrefix = vendorPrefix.substr(0, 1).toUpperCase() + vendorPrefix.substr(1);
+                        if (match = vendorRegex.exec(prop)) {       
+                            vendorPrefix = match[0];                // 
+                            vendorPrefix = vendorPrefix.substr(0, 1).toUpperCase() + vendorPrefix.substr(1);    // 把第一个字母转成小写 例如'Moz'->'moz'
                             break;
                         }
                     }
