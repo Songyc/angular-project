@@ -82,7 +82,7 @@
             return new ErrorConstructor(message);               // 抛出异常
         };
     }
-
+    window.minErr = minErr;
     /* We need to tell jshint what variables are being exported */
     /* global angular: true,
   msie: true,
