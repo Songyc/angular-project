@@ -5013,7 +5013,7 @@
                 }
             }
         }
-
+        
         /**
          * @private
          * Note: this method is used only by scenario runner
@@ -5108,11 +5108,11 @@
          * @param {boolean=} replace Should new url replace current history record?
          * @param {object=} state object to use with pushState/replaceState
          */
-        self.url = function(url, replace, state) {               // 
+        self.url = function(url, replace, state) {               // 尝试用pushState, replace方法跳转到链接url，如果不支持调用replace(), 否则直接设置 location.href
             // In modern browsers `history.state` is `null` by default; treating it separately
             // from `undefined` would cause `$browser.url('/foo')` to change `history.state`
             // to undefined via `pushState`. Instead, let's change `undefined` to `null` here.
-            if (isUndefined(state)) {
+            if (isUndefined(state)) {           
                 state = null;
             }
 
@@ -5127,29 +5127,29 @@
                 // Don't change anything if previous and current URLs and states match. This also prevents
                 // IE<10 from getting into redirect loop when in LocationHashbangInHtml5Url mode.
                 // See https://github.com/angular/angular.js/commit/ffb2701
-                if (lastBrowserUrl === url && (!$sniffer.history || sameState)) {     // 
+                if (lastBrowserUrl === url && (!$sniffer.history || sameState)) {     // 地址相等并且不支持history.pushState或者与上一个历史记录相等，直接返回
                     return;
                 }
-                var sameBase = lastBrowserUrl && stripHash(lastBrowserUrl) === stripHash(url);
-                lastBrowserUrl = url;
-                lastHistoryState = state;
+                var sameBase = lastBrowserUrl && stripHash(lastBrowserUrl) === stripHash(url);    // 比较#前面的路径是否相等。去掉#以及后面的参数
+                lastBrowserUrl = url;                                                 // 当前url记录为lastBrowerUrl，
+                lastHistoryState = state;                                             // 当前state记录为lastHistoryState
                 // Don't use history API if only the hash changed
                 // due to a bug in IE10/IE11 which leads
                 // to not firing a `hashchange` nor `popstate` event
                 // in some cases (see #9143).
-                if ($sniffer.history && (!sameBase || !sameState)) {
-                    history[replace ? 'replaceState' : 'pushState'](state, '', url);
-                    cacheState();
+                if ($sniffer.history && (!sameBase || !sameState)) {                  // 如果支持history.pushState方法，#前面路径不相等或者state状态不一样
+                    history[replace ? 'replaceState' : 'pushState'](state, '', url);      // 参数replace指示获取 history.replaceState对象还是pushState对象
+                    cacheState();                                                         // 缓存state对象
                     // Do the assignment again so that those two variables are referentially identical.
-                    lastHistoryState = cachedState;
+                    lastHistoryState = cachedState;                                   
                 } else {
-                    if (!sameBase) {
-                        reloadLocation = url;
+                    if (!sameBase) {                                                  // 如果不支持pushState方法，路径相等
+                        reloadLocation = url;                                         // 赋值给reloadLocation
                     }
-                    if (replace) {
+                    if (replace) {                                                    // 调用loctaion.href()，跳转到url
                         location.replace(url);
                     } else {
-                        location.href = url;
+                        location.href = url;                                          // 否则直接设置location.href
                     }
                 }
                 return self;
@@ -5158,7 +5158,7 @@
                 // - reloadLocation is needed as browsers don't allow to read out
                 //   the new location.href if a reload happened.
                 // - the replacement is a workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=407172
-                return reloadLocation || location.href.replace(/%27/g, "'");
+                return reloadLocation || location.href.replace(/%27/g, "'");          // 将链接中的所有“'”通过url编码后的字符全部还原回去
             }
         };
 
@@ -5172,14 +5172,14 @@
          *
          * @returns {object} state
          */
-        self.state = function() {
+        self.state = function() {              // 返回history.state对象
             return cachedState;
         };
 
-        var urlChangeListeners = [],
+        var urlChangeListeners = [],    
             urlChangeInit = false;
 
-        function cacheStateAndFireUrlChange() {
+        function cacheStateAndFireUrlChange() {         // 
             cacheState();
             fireUrlChange();
         }
@@ -5200,13 +5200,13 @@
         }
 
         function fireUrlChange() {              // 
-            if (lastBrowserUrl === self.url() && lastHistoryState === cachedState) {
+            if (lastBrowserUrl === self.url() && lastHistoryState === cachedState) {      // url没有改变并且state相等，直接返回
                 return;
             }
 
-            lastBrowserUrl = self.url();
-            lastHistoryState = cachedState;
-            forEach(urlChangeListeners, function(listener) {
+            lastBrowserUrl = self.url();        // 记录为lastBrowerUrl
+            lastHistoryState = cachedState;     // 记录为lastHistoryState
+            forEach(urlChangeListeners, function(listener) {      // 
                 listener(self.url(), cachedState);
             });
         }
@@ -5406,6 +5406,7 @@
         };
 
     }
+    window.Browser = Browser;
 
     function $BrowserProvider() {
         this.$get = ['$window', '$log', '$sniffer', '$document',
@@ -15985,14 +15986,14 @@
                         }
                     }
 
-                    if (!vendorPrefix) {
+                    if (!vendorPrefix) {                            // 默认为webkit
                         vendorPrefix = ('WebkitOpacity' in bodyStyle) && 'webkit';
                     }
 
-                    transitions = !! (('transition' in bodyStyle) || (vendorPrefix + 'Transition' in bodyStyle));
+                    transitions = !! (('transition' in bodyStyle) || (vendorPrefix + 'Transition' in bodyStyle));     // 是否支持transtion和animation
                     animations = !! (('animation' in bodyStyle) || (vendorPrefix + 'Animation' in bodyStyle));
 
-                    if (android && (!transitions || !animations)) {
+                    if (android && (!transitions || !animations)) {           
                         transitions = isString(document.body.style.webkitTransition);
                         animations = isString(document.body.style.webkitAnimation);
                     }
@@ -16009,9 +16010,9 @@
                     // so let's not use the history API also
                     // We are purposefully using `!(android < 4)` to cover the case when `android` is undefined
                     // jshint -W018
-                    history: !! ($window.history && $window.history.pushState && !(android < 4) && !boxee),
+                    history: !! ($window.history && $window.history.pushState && !(android < 4) && !boxee),  // 小于4.0版本的安卓机, 是否支持pushState方法
                     // jshint +W018
-                    hasEvent: function(event) {
+                    hasEvent: function(event) {                                 // 是否支持event
                         // IE9 implements 'input' event it's so fubared that we rather pretend that it doesn't have
                         // it. In particular the event is not fired when backspace or delete key are pressed or
                         // when cut operation is performed.
@@ -16019,16 +16020,16 @@
 
                         if (isUndefined(eventSupport[event])) {
                             var divElm = document.createElement('div');
-                            eventSupport[event] = 'on' + event in divElm;
+                            eventSupport[event] = 'on' + event in divElm;       // 缓存
                         }
 
-                        return eventSupport[event];
+                        return eventSupport[event];                             // 返回是否支持
                     },
-                    csp: csp(),
-                    vendorPrefix: vendorPrefix,
-                    transitions: transitions,
-                    animations: animations,
-                    android: android
+                    csp: csp(),                                                 // 是否有ngCsp指令
+                    vendorPrefix: vendorPrefix,                                 // 浏览器前缀
+                    transitions: transitions,                                   // transitions动画
+                    animations: animations,                                     // animations动画
+                    android: android                                            // 是否在安卓机
                 };
             }
         ];

@@ -12,8 +12,10 @@
 	<script src="../js/angular.js"></script>
 	<script>
 	var app = angular.module('myApp', []);
-	app.controller('myController', ['$scope', '$animate', function ($scope, $animate) {
-		
+	app.controller('myController', ['$browser',  function ($brower) {
+		console.log($brower);
+		// $brower.url('http://www.baidu.com', true, '123');
+		console.log($brower.state());
 	}]);
 	</script>
 </body>
