@@ -4983,8 +4983,8 @@
 
         self.isMock = false;            // 模拟的
 
-        var outstandingRequestCount = 0;              // 外请求数量
-        var outstandingRequestCallbacks = [];         // 外请求回调函数队列
+        var outstandingRequestCount = 0;              // 未完成的请求数量
+        var outstandingRequestCallbacks = [];         // 未完成的请求回调函数队列
 
         // TODO(vojta): remove this temporary api
         self.$$completeOutstandingRequest = completeOutstandingRequest;     // 完成请求方法
@@ -4997,7 +4997,7 @@
          * counter. If the counter reaches 0, all the `outstandingRequestCallbacks` are executed.
          */
 
-        function completeOutstandingRequest(fn) {             // 完成请求回调函数
+        function completeOutstandingRequest(fn) {             // 执行完成请求回调函数
             try {
                 fn.apply(null, sliceArgs(arguments, 1));      // 执行fn，参数从第二个开始
             } finally {
@@ -5005,7 +5005,7 @@
                 if (outstandingRequestCount === 0) {          // 如果为0，表示所有请求执行完
                     while (outstandingRequestCallbacks.length) {        // 执行完成函数并出队  
                         try {
-                            outstandingRequestCallbacks.pop()();        
+                            outstandingRequestCallbacks.pop()();        //   
                         } catch (e) {
                             $log.error(e);
                         }
@@ -5177,9 +5177,9 @@
         };
 
         var urlChangeListeners = [],    
-            urlChangeInit = false;
+            urlChangeInit = false;              // urlChangeInit初始值为false, 说明路径还没有改变过
 
-        function cacheStateAndFireUrlChange() {         // 
+        function cacheStateAndFireUrlChange() {         // 缓存state对象，并改变路径
             cacheState();
             fireUrlChange();
         }
@@ -5199,15 +5199,15 @@
             lastCachedState = cachedState;      // 将当前cachedState作为lastCachedState上一次缓存
         }
 
-        function fireUrlChange() {              // 
+        function fireUrlChange() {              // 执行路径变更
             if (lastBrowserUrl === self.url() && lastHistoryState === cachedState) {      // url没有改变并且state相等，直接返回
                 return;
             }
 
             lastBrowserUrl = self.url();        // 记录为lastBrowerUrl
             lastHistoryState = cachedState;     // 记录为lastHistoryState
-            forEach(urlChangeListeners, function(listener) {      // 
-                listener(self.url(), cachedState);
+            forEach(urlChangeListeners, function(listener) {      // 依次执行listeners的函数
+                listener(self.url(), cachedState);                // 第一个参数传入当前路径, 第二个参数传入state对象
             });
         }
 
@@ -5232,22 +5232,22 @@
          * @param {function(string)} listener Listener function to be called when url changes.
          * @return {function(string)} Returns the registered listener fn - handy if the fn is anonymous.
          */
-        self.onUrlChange = function(callback) {
+        self.onUrlChange = function(callback) {                   // 路径变换
             // TODO(vojta): refactor to use node's syntax for events
-            if (!urlChangeInit) {
+            if (!urlChangeInit) {                                 // 如果一次都没有改变
                 // We listen on both (hashchange/popstate) when available, as some browsers (e.g. Opera)
                 // don't fire popstate when user change the address bar and don't fire hashchange when url
                 // changed by push/replaceState
 
                 // html5 history api - popstate event
-                if ($sniffer.history) jqLite(window).on('popstate', cacheStateAndFireUrlChange);
+                if ($sniffer.history) jqLite(window).on('popstate', cacheStateAndFireUrlChange);    // 如果支持pushstate, 监听'popstate'事件   
                 // hashchange event
-                jqLite(window).on('hashchange', cacheStateAndFireUrlChange);
+                jqLite(window).on('hashchange', cacheStateAndFireUrlChange);          // 监听hashchange事件
 
-                urlChangeInit = true;
+                urlChangeInit = true;                             // 设置urlChangeInit为true
             }
 
-            urlChangeListeners.push(callback);
+            urlChangeListeners.push(callback);                    // 把callback插入urlChangeListeners数组中
             return callback;
         };
 
@@ -5256,7 +5256,7 @@
          * Needs to be exported to be able to check for changes that have been done in sync,
          * as hashchange/popstate events fire in async.
          */
-        self.$$checkUrlChange = fireUrlChange;
+        self.$$checkUrlChange = fireUrlChange;                    // 
 
         //////////////////////////////////////////////////////////////
         // Misc API
@@ -5271,8 +5271,8 @@
          *
          * @returns {string} The current base href
          */
-        self.baseHref = function() {
-            var href = baseElement.attr('href');
+        self.baseHref = function() {                                // 把base元素的https去掉
+            var href = baseElement.attr('href');                    // 
             return href ? href.replace(/^(https?\:)?\/\/[^\/]*/, '') : '';
         };
 
@@ -5283,7 +5283,7 @@
         var lastCookieString = '';
         var cookiePath = self.baseHref();
 
-        function safeDecodeURIComponent(str) {
+        function safeDecodeURIComponent(str) {                      // 安全的解码
             try {
                 return decodeURIComponent(str);
             } catch (e) {
@@ -5311,12 +5311,12 @@
          *
          * @returns {Object} Hash of all cookies (if called without any parameter)
          */
-        self.cookies = function(name, value) {
+        self.cookies = function(name, value) {                      // 
             var cookieLength, cookieArray, cookie, i, index;
 
-            if (name) {
+            if (name) {                                             // 如果有name, 设置cookie
                 if (value === undefined) {
-                    rawDocument.cookie = encodeURIComponent(name) + "=;path=" + cookiePath +
+                    rawDocument.cookie = encodeURIComponent(name) + "=;path=" + cookiePath +      // 链接基准
                         ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
                 } else {
                     if (isString(value)) {
@@ -5334,10 +5334,10 @@
                         }
                     }
                 }
-            } else {
-                if (rawDocument.cookie !== lastCookieString) {
-                    lastCookieString = rawDocument.cookie;
-                    cookieArray = lastCookieString.split("; ");
+            } else {                                                // 如果没有name，返回一个cooke对象
+                if (rawDocument.cookie !== lastCookieString) {      // 先比较
+                    lastCookieString = rawDocument.cookie;          // 缓存旧的cookie
+                    cookieArray = lastCookieString.split("; ");     // 
                     lastCookies = {};
 
                     for (i = 0; i < cookieArray.length; i++) {
@@ -5373,15 +5373,15 @@
          * via `$browser.defer.flush()`.
          *
          */
-        self.defer = function(fn, delay) {
+        self.defer = function(fn, delay) {                          // 延迟执行
             var timeoutId;
-            outstandingRequestCount++;
+            outstandingRequestCount++;                              // 请求数加1
             timeoutId = setTimeout(function() {
-                delete pendingDeferIds[timeoutId];
-                completeOutstandingRequest(fn);
+                delete pendingDeferIds[timeoutId];                  // 清除定时器
+                completeOutstandingRequest(fn);                     // 执行完成回调函数
             }, delay || 0);
-            pendingDeferIds[timeoutId] = true;
-            return timeoutId;
+            pendingDeferIds[timeoutId] = true;                      // 缓存定时器
+            return timeoutId;                                       // 返回定时器
         };
 
 
@@ -5395,18 +5395,17 @@
          * @returns {boolean} Returns `true` if the task hasn't executed yet and was successfully
          *                    canceled.
          */
-        self.defer.cancel = function(deferId) {
-            if (pendingDeferIds[deferId]) {
-                delete pendingDeferIds[deferId];
-                clearTimeout(deferId);
-                completeOutstandingRequest(noop);
-                return true;
+        self.defer.cancel = function(deferId) {                     // 取消定时器
+            if (pendingDeferIds[deferId]) {                         
+                delete pendingDeferIds[deferId];                    // 清除缓存
+                clearTimeout(deferId);                              // 清除定时器
+                completeOutstandingRequest(noop);                   // 执行空函数
+                return true;                                        // 返回true
             }
             return false;
         };
 
     }
-    window.Browser = Browser;
 
     function $BrowserProvider() {
         this.$get = ['$window', '$log', '$sniffer', '$document',
@@ -5498,22 +5497,22 @@
    </example>
  */
 
-    function $CacheFactoryProvider() {
+    function $CacheFactoryProvider() {                        // 缓存工厂Provider
 
         this.$get = function() {
             var caches = {};
 
             function cacheFactory(cacheId, options) {
-                if (cacheId in caches) {
+                if (cacheId in caches) {                      // 不能是https, templates
                     throw minErr('$cacheFactory')('iid', "CacheId '{0}' is already taken!", cacheId);
                 }
 
-                var size = 0,
-                    stats = extend({}, options, {
+                var size = 0, 
+                    stats = extend({}, options, {             // 缓存cacheId
                         id: cacheId
                     }),
                     data = {},
-                    capacity = (options && options.capacity) || Number.MAX_VALUE,
+                    capacity = (options && options.capacity) || Number.MAX_VALUE,       // 容量
                     lruHash = {},
                     freshEnd = null,
                     staleEnd = null;
@@ -5537,7 +5536,7 @@
                  * Example test:
                  *
                  * ```js
-                 *  it('should behave like a cache', inject(function(superCache) {
+                 *  it('should behave like a cache', inject(function(superCache) {     
                  *    superCache.put('key', 'value');
                  *    superCache.put('another key', 'another value');
                  *
@@ -5577,17 +5576,17 @@
                      *    will not be stored.
                      * @returns {*} the value stored.
                      */
-                    put: function(key, value) {
-                        if (capacity < Number.MAX_VALUE) {
-                            var lruEntry = lruHash[key] || (lruHash[key] = {
+                    put: function(key, value) {                   // 缓存key/value到data对象上，记录size
+                        if (capacity < Number.MAX_VALUE) {        // 如果小于最大值
+                            var lruEntry = lruHash[key] || (lruHash[key] = {      
                                 key: key
                             });
 
-                            refresh(lruEntry);
+                            refresh(lruEntry);          // 
                         }
 
-                        if (isUndefined(value)) return;
-                        if (!(key in data)) size++;
+                        if (isUndefined(value)) return;      // value不能为undefined
+                        if (!(key in data)) size++;     // size加1
                         data[key] = value;
 
                         if (size > capacity) {
@@ -5608,7 +5607,7 @@
                      * @param {string} key the key of the data to be retrieved
                      * @returns {*} the value stored.
                      */
-                    get: function(key) {
+                    get: function(key) {                            // 获取缓存
                         if (capacity < Number.MAX_VALUE) {
                             var lruEntry = lruHash[key];
 
@@ -5711,15 +5710,15 @@
                  */
 
                 function refresh(entry) {
-                    if (entry != freshEnd) {
-                        if (!staleEnd) {
-                            staleEnd = entry;
-                        } else if (staleEnd == entry) {
-                            staleEnd = entry.n;
+                    if (entry != freshEnd) {                    // 
+                        if (!staleEnd) {                        // 不是旧的
+                            staleEnd = entry;                   // 更新staleEnd
+                        } else if (staleEnd == entry) {         // 如果entry等于staleEnd
+                            staleEnd = entry.n;                 // 
                         }
 
-                        link(entry.n, entry.p);
-                        link(entry, freshEnd);
+                        link(entry.n, entry.p);                 // 关联前后的缓存数据
+                        link(entry, freshEnd);                  // 
                         freshEnd = entry;
                         freshEnd.n = null;
                     }
@@ -5748,7 +5747,7 @@
              *
              * @returns {Object} - key-value map of `cacheId` to the result of calling `cache#info`
              */
-            cacheFactory.info = function() {
+            cacheFactory.info = function() {                    // 获取所有缓存信息
                 var info = {};
                 forEach(caches, function(cache, cacheId) {
                     info[cacheId] = cache.info();
@@ -5767,7 +5766,7 @@
              * @param {string} cacheId Name or id of a cache to access.
              * @returns {object} Cache object identified by the cacheId or undefined if no such cache.
              */
-            cacheFactory.get = function(cacheId) {
+            cacheFactory.get = function(cacheId) {              // 获取cacheId对应的缓存
                 return caches[cacheId];
             };
 
@@ -5819,7 +5818,7 @@
      *
      */
 
-    function $TemplateCacheProvider() {
+    function $TemplateCacheProvider() {                     // 模板Provider，返回缓存的模板
         this.$get = ['$cacheFactory',
             function($cacheFactory) {
                 return $cacheFactory('templates');
@@ -6508,9 +6507,9 @@
     function $CompileProvider($provide, $$sanitizeUriProvider) {
         var hasDirectives = {},
             Suffix = 'Directive',
-            COMMENT_DIRECTIVE_REGEXP = /^\s*directive\:\s*([\d\w_\-]+)\s+(.*)$/,
-            CLASS_DIRECTIVE_REGEXP = /(([\d\w_\-]+)(?:\:([^;]+))?;?)/,
-            ALL_OR_NOTHING_ATTRS = makeMap('ngSrc,ngSrcset,src,srcset'),
+            COMMENT_DIRECTIVE_REGEXP = /^\s*directive\:\s*([\d\w_\-]+)\s+(.*)$/,        // 注释指令正则
+            CLASS_DIRECTIVE_REGEXP = /(([\d\w_\-]+)(?:\:([^;]+))?;?)/,                  // 类指令正则
+            ALL_OR_NOTHING_ATTRS = makeMap('ngSrc,ngSrcset,src,srcset'),                // 返回一个对象，ngSrc，ngSrcset，src，srcset属性为true
             REQUIRE_PREFIX_REGEXP = /^(?:(\^\^?)?(\?)?(\^\^?)?)?/;
 
         // Ref: http://developers.whatwg.org/webappapis.html#event-handler-idl-attributes
@@ -6518,8 +6517,8 @@
         // 'on' and be composed of only English letters.
         var EVENT_HANDLER_ATTR_REGEXP = /^(on[a-z]+|formaction)$/;
 
-        function parseIsolateBindings(scope, directiveName) {
-            var LOCAL_REGEXP = /^\s*([@=&])(\??)\s*(\w*)\s*$/;
+        function parseIsolateBindings(scope, directiveName) {                   // 解释隔离绑定
+            var LOCAL_REGEXP = /^\s*([@=&])(\??)\s*(\w*)\s*$/;                  // 
 
             var bindings = {};
 
