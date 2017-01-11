@@ -6506,11 +6506,11 @@
 
     function $CompileProvider($provide, $$sanitizeUriProvider) {
         var hasDirectives = {},
-            Suffix = 'Directive',
+            Suffix = 'Directive', 
             COMMENT_DIRECTIVE_REGEXP = /^\s*directive\:\s*([\d\w_\-]+)\s+(.*)$/,        // 注释指令正则
             CLASS_DIRECTIVE_REGEXP = /(([\d\w_\-]+)(?:\:([^;]+))?;?)/,                  // 类指令正则
             ALL_OR_NOTHING_ATTRS = makeMap('ngSrc,ngSrcset,src,srcset'),                // 返回一个对象，ngSrc，ngSrcset，src，srcset属性为true
-            REQUIRE_PREFIX_REGEXP = /^(?:(\^\^?)?(\?)?(\^\^?)?)?/;
+            REQUIRE_PREFIX_REGEXP = /^(?:(\^\^?)?(\?)?(\^\^?)?)?/;                      // 
 
         // Ref: http://developers.whatwg.org/webappapis.html#event-handler-idl-attributes
         // The assumption is that future DOM event attribute names will begin with
@@ -6522,7 +6522,7 @@
 
             var bindings = {};
 
-            forEach(scope, function(definition, scopeName) {
+            forEach(scope, function(definition, scopeName) {                    // 
                 var match = definition.match(LOCAL_REGEXP);
 
                 if (!match) {
@@ -6557,34 +6557,34 @@
          *    {@link guide/directive} for more info.
          * @returns {ng.$compileProvider} Self for chaining.
          */
-        this.directive = function registerDirective(name, directiveFactory) {
+        this.directive = function registerDirective(name, directiveFactory) {     // 写入指令方法, 以nameProvider/记录在providerCache上
             assertNotHasOwnProperty(name, 'directive');
             if (isString(name)) {
                 assertArg(directiveFactory, 'directiveFactory');
-                if (!hasDirectives.hasOwnProperty(name)) {
+                if (!hasDirectives.hasOwnProperty(name)) {                        // hasDirectives记录
                     hasDirectives[name] = [];
-                    $provide.factory(name + Suffix, ['$injector', '$exceptionHandler',
+                    $provide.factory(name + Suffix, ['$injector', '$exceptionHandler',    // 保存{$get: factoryFn}在providerCache上，并返回该对象。
                         function($injector, $exceptionHandler) {
-                            var directives = [];
+                            var directives = [];                                  // 
                             forEach(hasDirectives[name], function(directiveFactory, index) {
                                 try {
-                                    var directive = $injector.invoke(directiveFactory);
-                                    if (isFunction(directive)) {
+                                    var directive = $injector.invoke(directiveFactory);   // // 调用fn。返回执行fn值
+                                    if (isFunction(directive)) {                  // 如果是函数，转成对象。该对象的compile属性指向方法，执行该方法会返回directive
                                         directive = {
                                             compile: valueFn(directive)
                                         };
-                                    } else if (!directive.compile && directive.link) {
-                                        directive.compile = valueFn(directive.link);
+                                    } else if (!directive.compile && directive.link) {    // 如果指令没有compile属性但有link
+                                        directive.compile = valueFn(directive.link);      // compile属性指向一个方法，执行该方法返回dircetive.link
                                     }
-                                    directive.priority = directive.priority || 0;
-                                    directive.index = index;
-                                    directive.name = directive.name || name;
-                                    directive.require = directive.require || (directive.controller && directive.name);
-                                    directive.restrict = directive.restrict || 'EA';
-                                    if (isObject(directive.scope)) {
-                                        directive.$$isolateBindings = parseIsolateBindings(directive.scope, directive.name);
+                                    directive.priority = directive.priority || 0;     // 优先级
+                                    directive.index = index;                          // index
+                                    directive.name = directive.name || name;          // 指令名
+                                    directive.require = directive.require || (directive.controller && directive.name);      // require
+                                    directive.restrict = directive.restrict || 'EA';    // 默认为'EA'
+                                    if (isObject(directive.scope)) {                  // 如果scope属性为对象
+                                        directive.$$isolateBindings = parseIsolateBindings(directive.scope, directive.name);  // 调用parseIsolateBindings函数隔离
                                     }
-                                    directives.push(directive);
+                                    directives.push(directive);                       // 将directive加入到directives队列中
                                 } catch (e) {
                                     $exceptionHandler(e);
                                 }
@@ -17710,17 +17710,17 @@
      * without changing the location or causing page reloads, e.g.:
      * `<a href="" ng-click="list.addItem()">Add Item</a>`
      */
-    var htmlAnchorDirective = valueFn({
+    var htmlAnchorDirective = valueFn({           // 
         restrict: 'E',
-        compile: function(element, attr) {
-            if (!attr.href && !attr.xlinkHref && !attr.name) {
-                return function(scope, element) {
+        compile: function(element, attr) {        // 
+            if (!attr.href && !attr.xlinkHref && !attr.name) {    // 如果没有href, 不是svg, 并且没有name属性
+                return function(scope, element) {       // 返回一个函数
                     // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
-                    var href = toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?
+                    var href = toString.call(element.prop('href')) === '[object SVGAnimatedString]' ?     // 获取href，如果是svg，为xlink:href
                         'xlink:href' : 'href';
-                    element.on('click', function(event) {
+                    element.on('click', function(event) {         // 绑定element, 如果没有href属性，则阻止a标签的默认行为
                         // if we have no href url, then don't navigate anywhere.
-                        if (!element.attr(href)) {
+                        if (!element.attr(href)) {            
                             event.preventDefault();
                         }
                     });
@@ -20136,7 +20136,7 @@
       </file>
     </example>
  */
-    var inputDirective = ['$browser', '$sniffer', '$filter', '$parse',
+    var inputDirective = ['$browser', '$sniffer', '$filter', '$parse',          // input指令
         function($browser, $sniffer, $filter, $parse) {
             return {
                 restrict: 'E',

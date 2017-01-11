@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body ng-app="myApp">
+	<div class="test" ng-controller="myController">
+		test
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var myModule = angular.module('myApp', []);
+	myModule.controller('myController', ['$scope', '$compile', function ($scope, $compile) {
+		console.log({obj: providerCache});
+		myModule.directive('input');
+
+		myModule.directive('directiveName', function factory(injectables) {
+		  	var directiveDefinitionObject = {
+		  		priority: 0,
+		  		template: '<div></div>', // or // function(tElement, tAttrs) { ... },
+		  		// or
+		  		// templateUrl: 'directive.html', // or // function(tElement, tAttrs) { ... },
+		  		transclude: false,
+		  		restrict: 'A',
+		  		scope: false,
+		  		controller: function($scope, $element, $attrs, $transclude, otherInjectables) {
+		  		},
+		  		controllerAs: 'stringAlias',
+		  		require: 'siblingDirectiveName', // or // ['^parentDirectiveName', '?optionalDirectiveName', '?^optionalParent'],
+		  		compile: function compile(tElement, tAttrs, transclude) {
+		  			return {
+		  				pre: function preLink(scope, iElement, iAttrs, controller) {
+		  				},
+		  				post: function postLink(scope, iElement, iAttrs, controller) {
+		  				}
+		  			}
+		  			// or
+		  			// return function postLink( ... ) { ... }
+		  		}
+		  		// or
+		  		// link: {
+		  		//  pre: function preLink(scope, iElement, iAttrs, controller) { ... },
+		  		//  post: function postLink(scope, iElement, iAttrs, controller) { ... }
+		  		// }
+		  		// or
+		  		// link: function postLink( ... ) { ... }
+		  	};
+		  	return directiveDefinitionObject;
+		  });
+	}]);
+
+	</script>
+</body>
+</html>
