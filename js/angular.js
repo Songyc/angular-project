@@ -6586,14 +6586,14 @@
                                     }
                                     directives.push(directive);                       // 将directive加入到directives队列中
                                 } catch (e) {
-                                    $exceptionHandler(e);
+                                    $exceptionHandler(e);                             // 
                                 }
                             });
-                            return directives;
+                            return directives;                                        // 返回directives
                         }
                     ]);
                 }
-                hasDirectives[name].push(directiveFactory);
+                hasDirectives[name].push(directiveFactory);                           // 
             } else {
                 forEach(name, reverseParams(registerDirective));
             }
@@ -6621,12 +6621,12 @@
          * @returns {RegExp|ng.$compileProvider} Current RegExp if called without value or self for
          *    chaining otherwise.
          */
-        this.aHrefSanitizationWhitelist = function(regexp) {
+        this.aHrefSanitizationWhitelist = function(regexp) {                          // aHref
             if (isDefined(regexp)) {
-                $$sanitizeUriProvider.aHrefSanitizationWhitelist(regexp);
+                $$sanitizeUriProvider.aHrefSanitizationWhitelist(regexp);             // 把regexp赋值给aHrefSanitizationWhitelist
                 return this;
             } else {
-                return $$sanitizeUriProvider.aHrefSanitizationWhitelist();
+                return $$sanitizeUriProvider.aHrefSanitizationWhitelist();            // 否则返回aHrefSanitizationWhitelist
             }
         };
 
@@ -6683,7 +6683,7 @@
          * The default value is true.
          */
         var debugInfoEnabled = true;
-        this.debugInfoEnabled = function(enabled) {
+        this.debugInfoEnabled = function(enabled) {                             // 
             if (isDefined(enabled)) {
                 debugInfoEnabled = enabled;
                 return this;
@@ -6694,7 +6694,7 @@
         this.$get = [
             '$injector', '$interpolate', '$exceptionHandler', '$templateRequest', '$parse',
             '$controller', '$rootScope', '$document', '$sce', '$animate', '$$sanitizeUri',
-            function($injector, $interpolate, $exceptionHandler, $templateRequest, $parse,
+            function($injector, $interpolate, $exceptionHandler, $templateRequest, $parse,          // 
                 $controller, $rootScope, $document, $sce, $animate, $$sanitizeUri) {
 
                 var Attributes = function(element, attributesToCopy) {
@@ -6926,12 +6926,12 @@
                 }
 
 
-                var startSymbol = $interpolate.startSymbol(),
-                    endSymbol = $interpolate.endSymbol(),
+                var startSymbol = $interpolate.startSymbol(),                                     // 返回开始标记'{{'
+                    endSymbol = $interpolate.endSymbol(),                                         // 返回结尾标记'}}'
                     denormalizeTemplate = (startSymbol == '{{' || endSymbol == '}}') ? identity : function denormalizeTemplate(template) {
-                        return template.replace(/\{\{/g, startSymbol).replace(/}}/g, endSymbol);
+                        return template.replace(/\{\{/g, startSymbol).replace(/}}/g, endSymbol);  // 否则用开始标记'{{', 结尾标记'}}'代替
                     },
-                    NG_ATTR_BINDING = /^ngAttr[A-Z]/;
+                    NG_ATTR_BINDING = /^ngAttr[A-Z]/;                                             // ngAttr绑定
 
                 compile.$$addBindingInfo = debugInfoEnabled ? function $$addBindingInfo($element, binding) {
                     var bindings = $element.data('$binding') || [];
@@ -10103,7 +10103,7 @@
                  * - `context`: evaluation context for all expressions embedded in the interpolated text
                  */
 
-                function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {
+                function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {                         // 插入
                     allOrNothing = !! allOrNothing;
                     var startIndex,
                         endIndex,
@@ -14812,7 +14812,7 @@
      */
 
     function $$SanitizeUriProvider() {
-        var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,
+        var aHrefSanitizationWhitelist = /^\s*(https?|ftp|mailto|tel|file):/,                           // 检索或重写默认的正则表达式，使用白名单安全
             imgSrcSanitizationWhitelist = /^\s*((https?|ftp|file|blob):|data:image\/)/;
 
         /**
