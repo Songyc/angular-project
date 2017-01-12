@@ -4,16 +4,20 @@
 </head>
 <body ng-app="myApp">
 	<div class="test" ng-controller="PhoneListCtrl">
-	
+	   <input type="text"  ng-click="alert()">
 	</div>
   	<script>
-  	angular.module('myApp', []).controller('PhoneListCtrl', ['$animate', function ($animateProvider) {
-      
-  		providerCache.$animateProvider.register('.test', function () {
-  			return '123';
-  		});
-  		console.log(providerCache['.test-animationProvider'].$get());
-  		
+  	angular.module('myApp', []).controller('PhoneListCtrl', ['$animate', '$scope', function ($animateProvider, $scope) {
+
+      $scope.alert = function () {
+        alert("scope");
+      };
+
+  		// providerCache.$animateProvider.register('.test', function () {
+  		// 	 return '123';
+  		// });
+
+  		// console.log(providerCache['.test-animationProvider'].$get());
   	}]);
   	</script>
 </body>

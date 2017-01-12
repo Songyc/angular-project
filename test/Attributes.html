@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body ng-app="myApp">
+	<div class="test" ng-controller="myController">
+		<input type="text" class="input">
+		<img src="" class="img">
+		test
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var myModule = angular.module('myApp', []);
+	myModule.controller('myController', ['$scope', '$compile', function ($scope, $compile) {
+		console.log({obj: providerCache});
+		var attribute = new Attributes(angular.element(document.querySelector('.img')));
+		attribute.$observe('key', function key() {
+			console.log('key');
+		});
+	}]);
+
+	</script>
+</body>
+</html>

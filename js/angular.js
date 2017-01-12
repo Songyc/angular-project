@@ -6683,7 +6683,7 @@
          * The default value is true.
          */
         var debugInfoEnabled = true;
-        this.debugInfoEnabled = function(enabled) {                             // 
+        this.debugInfoEnabled = function(enabled) {                             // 更新debug信息状态
             if (isDefined(enabled)) {
                 debugInfoEnabled = enabled;
                 return this;
@@ -6697,24 +6697,24 @@
             function($injector, $interpolate, $exceptionHandler, $templateRequest, $parse,          // 
                 $controller, $rootScope, $document, $sce, $animate, $$sanitizeUri) {
 
-                var Attributes = function(element, attributesToCopy) {
+                var Attributes = function(element, attributesToCopy) {          // 
                     if (attributesToCopy) {
                         var keys = Object.keys(attributesToCopy);
                         var i, l, key;
 
-                        for (i = 0, l = keys.length; i < l; i++) {
+                        for (i = 0, l = keys.length; i < l; i++) {              // 把attributesToCopy深复制到this上
                             key = keys[i];
                             this[key] = attributesToCopy[key];
                         }
                     } else {
-                        this.$attr = {};
+                        this.$attr = {};                                        // 否则设置$attr为空对象
                     }
 
-                    this.$$element = element;
+                    this.$$element = element;                                   // 设置$$element为element
                 };
-
+                window.Attributes = Attributes;
                 Attributes.prototype = {
-                    $normalize: directiveNormalize,
+                    $normalize: directiveNormalize,                             // 规范化指令
 
 
                     /**
@@ -6728,9 +6728,9 @@
                      *
                      * @param {string} classVal The className value that will be added to the element
                      */
-                    $addClass: function(classVal) {
+                    $addClass: function(classVal) {                 // 添加类名
                         if (classVal && classVal.length > 0) {
-                            $animate.addClass(this.$$element, classVal);
+                            $animate.addClass(this.$$element, classVal);        // 调用$animate添加
                         }
                     },
 
@@ -6745,7 +6745,7 @@
                      *
                      * @param {string} classVal The className value that will be removed from the element
                      */
-                    $removeClass: function(classVal) {
+                    $removeClass: function(classVal) {            // 删除类名
                         if (classVal && classVal.length > 0) {
                             $animate.removeClass(this.$$element, classVal);
                         }
@@ -6763,7 +6763,7 @@
                      * @param {string} newClasses The current CSS className value
                      * @param {string} oldClasses The former CSS className value
                      */
-                    $updateClass: function(newClasses, oldClasses) {
+                    $updateClass: function(newClasses, oldClasses) {          // 更新类名
                         var toAdd = tokenDifference(newClasses, oldClasses);
                         if (toAdd && toAdd.length) {
                             $animate.addClass(this.$$element, toAdd);
@@ -6784,59 +6784,59 @@
                      *     Defaults to true.
                      * @param {string=} attrName Optional none normalized name. Defaults to key.
                      */
-                    $set: function(key, value, writeAttr, attrName) {
+                    $set: function(key, value, writeAttr, attrName) {         // 设置this上element元素key为value, 并记录
                         // TODO: decide whether or not to throw an error if "class"
                         //is set through this function since it may cause $updateClass to
                         //become unstable.
 
-                        var node = this.$$element[0],
-                            booleanKey = getBooleanAttrName(node, key),
-                            aliasedKey = getAliasedAttrName(node, key),
+                        var node = this.$$element[0],                         // 获取node
+                            booleanKey = getBooleanAttrName(node, key),       // 获取node中属性key的布尔值
+                            aliasedKey = getAliasedAttrName(node, key),       // 当node为input或者textarea时，获取ALIASED_ATTR对象中属性为参数name的值
                             observer = key,
                             normalizedVal,
                             nodeName;
 
-                        if (booleanKey) {
-                            this.$$element.prop(key, value);
-                            attrName = booleanKey;
-                        } else if (aliasedKey) {
-                            this[aliasedKey] = value;
-                            observer = aliasedKey;
+                        if (booleanKey) {                                     // 如果获取到booleanKey
+                            this.$$element.prop(key, value);                  // 设置key值为value
+                            attrName = booleanKey;                            // 设置名为booleanKey
+                        } else if (aliasedKey) {                              // 如果获取到aliasedkey
+                            this[aliasedKey] = value;                         // 设置aliasedKey属性为value
+                            observer = aliasedKey;                            // 赋值aliasedKey为observer
                         }
 
-                        this[key] = value;
+                        this[key] = value;                                    // 设置key为value
 
                         // translate normalized key to actual key
-                        if (attrName) {
+                        if (attrName) {                                       // 如果attrName有值，则设置名记录到$attr对象中
                             this.$attr[key] = attrName;
                         } else {
-                            attrName = this.$attr[key];
-                            if (!attrName) {
-                                this.$attr[key] = attrName = snake_case(key, '-');
+                            attrName = this.$attr[key];                       // 否则从$attr中读取key
+                            if (!attrName) {                                  // 如果找不到
+                                this.$attr[key] = attrName = snake_case(key, '-');          // 将key值转成连字符再保存到$attr中
                             }
                         }
 
-                        nodeName = nodeName_(this.$$element);
+                        nodeName = nodeName_(this.$$element);                 // 获取标签名
 
-                        if ((nodeName === 'a' && key === 'href') ||
+                        if ((nodeName === 'a' && key === 'href') ||           // 如果是要设置a标签的href或者img标签的src属性
                             (nodeName === 'img' && key === 'src')) {
                             // sanitize a[href] and img[src] values
-                            this[key] = value = $$sanitizeUri(value, key === 'src');
-                        } else if (nodeName === 'img' && key === 'srcset') {
+                            this[key] = value = $$sanitizeUri(value, key === 'src');    // 审查url
+                        } else if (nodeName === 'img' && key === 'srcset') {  // 
                             // sanitize img[srcset] values
                             var result = "";
 
                             // first check if there are spaces because it's not the same pattern
-                            var trimmedSrcset = trim(value);
+                            var trimmedSrcset = trim(value);                            // 去掉空格
                             //                (   999x   ,|   999w   ,|   ,|,   )
-                            var srcPattern = /(\s+\d+x\s*,|\s+\d+w\s*,|\s+,|,\s+)/;
-                            var pattern = /\s/.test(trimmedSrcset) ? srcPattern : /(,)/;
+                            var srcPattern = /(\s+\d+x\s*,|\s+\d+w\s*,|\s+,|,\s+)/;     // 
+                            var pattern = /\s/.test(trimmedSrcset) ? srcPattern : /(,)/;    // 如果有空格，就用trimmedSrcset, 否则用,
 
                             // split srcset into tuple of uri and descriptor except for the last item
-                            var rawUris = trimmedSrcset.split(pattern);
+                            var rawUris = trimmedSrcset.split(pattern);                 // 用pattern分割trimmedSrcset
 
-                            // for each tuples
-                            var nbrUrisWith2parts = Math.floor(rawUris.length / 2);
+                            // for each tuples                                          // 
+                            var nbrUrisWith2parts = Math.floor(rawUris.length / 2);     // 分成两组
                             for (var i = 0; i < nbrUrisWith2parts; i++) {
                                 var innerIdx = i * 2;
                                 // sanitize the uri
@@ -6846,33 +6846,33 @@
                             }
 
                             // split the last item into uri and descriptor
-                            var lastTuple = trim(rawUris[i * 2]).split(/\s/);
+                            var lastTuple = trim(rawUris[i * 2]).split(/\s/);           // 把最后一项为URI和描述符
 
                             // sanitize the last uri
-                            result += $$sanitizeUri(trim(lastTuple[0]), true);
+                            result += $$sanitizeUri(trim(lastTuple[0]), true);          // 
 
                             // and add the last descriptor if any
-                            if (lastTuple.length === 2) {
+                            if (lastTuple.length === 2) {                               // 添加最后一个描述符
                                 result += (" " + trim(lastTuple[1]));
                             }
-                            this[key] = value = result;
+                            this[key] = value = result;                                 // 保存
                         }
 
-                        if (writeAttr !== false) {
+                        if (writeAttr !== false) {                                      // 如果writeAttr不为false
                             if (value === null || value === undefined) {
-                                this.$$element.removeAttr(attrName);
+                                this.$$element.removeAttr(attrName);                    // 移除attrName属性
                             } else {
-                                this.$$element.attr(attrName, value);
+                                this.$$element.attr(attrName, value);                   // 否则设置attrName/value
                             }
                         }
 
                         // fire observers
-                        var $$observers = this.$$observers;
-                        $$observers && forEach($$observers[observer], function(fn) {
+                        var $$observers = this.$$observers;                             // 如果有$$observers属性
+                        $$observers && forEach($$observers[observer], function(fn) {    // 遍历并尝试执行fn, value作为参数传入
                             try {
                                 fn(value);
                             } catch (e) {
-                                $exceptionHandler(e);
+                                $exceptionHandler(e);                                   // 期望处理函数
                             }
                         });
                     },
@@ -6896,27 +6896,27 @@
        *        See the {@link guide/directive#text-and-attribute-bindings Directives} guide for more info.
        * @returns {function()} Returns a deregistration function for this observer.
        */
-                    $observe: function(key, fn) {
+                    $observe: function(key, fn) {          // 观察。插入信息到asyncQueue中，返回一个函数，执行该函数会从listeners数组中移除fn
                         var attrs = this,
-                            $$observers = (attrs.$$observers || (attrs.$$observers = createMap())),
-                            listeners = ($$observers[key] || ($$observers[key] = []));
+                            $$observers = (attrs.$$observers || (attrs.$$observers = createMap())),     // 获取$$observers对象，否则初始化为空对象
+                            listeners = ($$observers[key] || ($$observers[key] = []));          // 获取参数key对应的观察函数, 否则初始化为空数组
 
-                        listeners.push(fn);
-                        $rootScope.$evalAsync(function() {
-                            if (!listeners.$$inter) {
+                        listeners.push(fn);               // 把fn插入到listeners数组中 
+                        $rootScope.$evalAsync(function() {      // 调用$rootScope.$evalAsync方法把{ scope: $rootScope, expression: fn}插入到asyncQueue中
+                            if (!listeners.$$inter) {     // listeners没有$$inter属性。没有人注册属性插值函数，所以让我们手动调用
                                 // no one registered attribute interpolation function, so lets call it manually
-                                fn(attrs[key]);
+                                fn(attrs[key]);           // 手动触发
                             }
                         });
 
-                        return function() {
+                        return function() {               // 返回函数，执行该函数会从listeners数组中移除fn。
                             arrayRemove(listeners, fn);
                         };
                     }
                 };
 
 
-                function safeAddClass($element, className) {
+                function safeAddClass($element, className) {    // 尝试添加类名
                     try {
                         $element.addClass(className);
                     } catch (e) {
@@ -6933,50 +6933,50 @@
                     },
                     NG_ATTR_BINDING = /^ngAttr[A-Z]/;                                             // ngAttr绑定
 
-                compile.$$addBindingInfo = debugInfoEnabled ? function $$addBindingInfo($element, binding) {
-                    var bindings = $element.data('$binding') || [];
+                compile.$$addBindingInfo = debugInfoEnabled ? function $$addBindingInfo($element, binding) {      // debugInfoEnabled如果为true，属性为$$addBindingInfo函数，否则为noop空函数
+                    var bindings = $element.data('$binding') || [];         // 从缓存中获取'$binding'对象，初始化为[]。
 
-                    if (isArray(binding)) {
-                        bindings = bindings.concat(binding);
+                    if (isArray(binding)) {                       // 如果binding是数组
+                        bindings = bindings.concat(binding);      // 合并到bindings中
                     } else {
-                        bindings.push(binding);
+                        bindings.push(binding);                   // 否则插入到bindings中
                     }
 
-                    $element.data('$binding', bindings);
+                    $element.data('$binding', bindings);          // 缓存
                 } : noop;
 
-                compile.$$addBindingClass = debugInfoEnabled ? function $$addBindingClass($element) {
-                    safeAddClass($element, 'ng-binding');
+                compile.$$addBindingClass = debugInfoEnabled ? function $$addBindingClass($element) {             // debugInfoEnabled如果为true，属性为$$addBindingClass函数，否则为noop空函数     
+                    safeAddClass($element, 'ng-binding');         // 添加类名ng-binding
                 } : noop;
 
-                compile.$$addScopeInfo = debugInfoEnabled ? function $$addScopeInfo($element, scope, isolated, noTemplate) {
-                    var dataName = isolated ? (noTemplate ? '$isolateScopeNoTemplate' : '$isolateScope') : '$scope';
-                    $element.data(dataName, scope);
+                compile.$$addScopeInfo = debugInfoEnabled ? function $$addScopeInfo($element, scope, isolated, noTemplate) {    // debugInfoEnabled如果为true，属性为$$addScopeInfo函数，否则为noop空函数     
+                    var dataName = isolated ? (noTemplate ? '$isolateScopeNoTemplate' : '$isolateScope') : '$scope';      // 如果isolated为true，说明是单独的作用域。如果没有模板，dataName为$isolateScopeNoTemplate。否则为$isolateScope。如果isolated为false, dataName为$scope。
+                    $element.data(dataName, scope);               // 缓存
                 } : noop;
 
-                compile.$$addScopeClass = debugInfoEnabled ? function $$addScopeClass($element, isolated) {
-                    safeAddClass($element, isolated ? 'ng-isolate-scope' : 'ng-scope');
+                compile.$$addScopeClass = debugInfoEnabled ? function $$addScopeClass($element, isolated) {       // debugInfoEnabled如果为true，属性为$$addScopeClass函数，否则为noop空函数     
+                    safeAddClass($element, isolated ? 'ng-isolate-scope' : 'ng-scope');       // 如果isolated为true，为$element添加ng-isolate-scope，否则为ng-scope
                 } : noop;
 
                 return compile;
 
                 //================================
 
-                function compile($compileNodes, transcludeFn, maxPriority, ignoreDirective,
+                function compile($compileNodes, transcludeFn, maxPriority, ignoreDirective,         // 
                     previousCompileContext) {
-                    if (!($compileNodes instanceof jqLite)) {
+                    if (!($compileNodes instanceof jqLite)) {      // 转成jqLite对象
                         // jquery always rewraps, whereas we need to preserve the original selector so that we can
                         // modify it.
                         $compileNodes = jqLite($compileNodes);
                     }
                     // We can not compile top level text elements since text nodes can be merged and we will
                     // not be able to attach scope data to them, so we will wrap them in <span>
-                    forEach($compileNodes, function(node, index) {
+                    forEach($compileNodes, function(node, index) {                                  // 我们不能编译顶级文本元素，因为文本节点可以合并，我们将无法将作用域数据附加到它们，所以我们将将它们包在<span>
                         if (node.nodeType == NODE_TYPE_TEXT && node.nodeValue.match(/\S+/) /* non-empty */ ) {
                             $compileNodes[index] = jqLite(node).wrap('<span></span>').parent()[0];
                         }
                     });
-                    var compositeLinkFn =
+                    var compositeLinkFn =                                // 
                         compileNodes($compileNodes, transcludeFn, $compileNodes,
                             maxPriority, ignoreDirective, previousCompileContext);
                     compile.$$addScopeClass($compileNodes);
@@ -7044,17 +7044,17 @@
                  * @returns {Function} A composite linking function of all of the matched directives or null.
                  */
 
-                function compileNodes(nodeList, transcludeFn, $rootElement, maxPriority, ignoreDirective,
+                function compileNodes(nodeList, transcludeFn, $rootElement, maxPriority, ignoreDirective,       // 编译节点
                     previousCompileContext) {
-                    var linkFns = [],
+                    var linkFns = [],                               // 
                         attrs, directives, nodeLinkFn, childNodes, childLinkFn, linkFnFound, nodeLinkFnFound;
 
-                    for (var i = 0; i < nodeList.length; i++) {
-                        attrs = new Attributes();
+                    for (var i = 0; i < nodeList.length; i++) {     // 遍历nodeList
+                        attrs = new Attributes();                   // 实例化一个attrs对象
 
                         // we must always refer to nodeList[i] since the nodes can be replaced underneath us.
-                        directives = collectDirectives(nodeList[i], [], attrs, i === 0 ? maxPriority : undefined,
-                            ignoreDirective);
+                        directives = collectDirectives(nodeList[i], [], attrs, i === 0 ? maxPriority : undefined,   // 
+                            ignoreDirective);                       //  
 
                         nodeLinkFn = (directives.length) ? applyDirectivesToNode(directives, nodeList[i], attrs, transcludeFn, $rootElement,
                             null, [], [], previousCompileContext) : null;
@@ -7163,22 +7163,22 @@
                  * @param {number=} maxPriority Max directive priority.
                  */
 
-                function collectDirectives(node, directives, attrs, maxPriority, ignoreDirective) {
+                function collectDirectives(node, directives, attrs, maxPriority, ignoreDirective) {     // 查找给定节点上的指令并将它们添加到已排序的指令集合中。
                     var nodeType = node.nodeType,
                         attrsMap = attrs.$attr,
                         match,
                         className;
 
-                    switch (nodeType) {
+                    switch (nodeType) {                               // 如果nodeType不为0
                         case NODE_TYPE_ELEMENT:
                             /* Element */
                             // use the node name: <directive>
-                            addDirective(directives,
+                            addDirective(directives,                  // 调用adDirectives添加指令
                                 directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);
 
                             // iterate over the attributes
                             for (var attr, name, nName, ngAttrName, value, isNgAttr, nAttrs = node.attributes,
-                                    j = 0, jj = nAttrs && nAttrs.length; j < jj; j++) {
+                                    j = 0, jj = nAttrs && nAttrs.length; j < jj; j++) {     // 
                                 var attrStartName = false;
                                 var attrEndName = false;
 
@@ -7187,13 +7187,13 @@
                                 value = trim(attr.value);
 
                                 // support ngAttr attribute binding
-                                ngAttrName = directiveNormalize(name);
-                                if (isNgAttr = NG_ATTR_BINDING.test(ngAttrName)) {
-                                    name = snake_case(ngAttrName.substr(6), '-');
+                                ngAttrName = directiveNormalize(name);                      // 规范ng-xx属性名
+                                if (isNgAttr = NG_ATTR_BINDING.test(ngAttrName)) {          // 如果名为ngAttrXX
+                                    name = snake_case(ngAttrName.substr(6), '-');           // 将ngAttr替换为-
                                 }
 
-                                var directiveNName = ngAttrName.replace(/(Start|End)$/, '');
-                                if (directiveIsMultiElement(directiveNName)) {
+                                var directiveNName = ngAttrName.replace(/(Start|End)$/, ''); // 去掉结尾的Start或者End
+                                if (directiveIsMultiElement(directiveNName)) {               // 
                                     if (ngAttrName === directiveNName + 'Start') {
                                         attrStartName = name;
                                         attrEndName = name.substr(0, name.length - 5) + 'end';
@@ -7832,31 +7832,31 @@
                  */
 
                 function addDirective(tDirectives, name, location, maxPriority, ignoreDirective, startAttrName,
-                    endAttrName) {
-                    if (name === ignoreDirective) return null;
-                    var match = null;
-                    if (hasDirectives.hasOwnProperty(name)) {
-                        for (var directive, directives = $injector.get(name + Suffix),
-                                i = 0, ii = directives.length; i < ii; i++) {
+                    endAttrName) {                                          // 添加指令到tDirectives
+                    if (name === ignoreDirective) return null;              // 如果name为忽略指令，直接返回
+                    var match = null;                           
+                    if (hasDirectives.hasOwnProperty(name)) {               // 匹配是否有内置指令
+                        for (var directive, directives = $injector.get(name + Suffix),      // 从providerCache中获取name+Suffix的服务
+                                i = 0, ii = directives.length; i < ii; i++) {       // 
                             try {
-                                directive = directives[i];
+                                directive = directives[i];                  // 
                                 if ((maxPriority === undefined || maxPriority > directive.priority) &&
-                                    directive.restrict.indexOf(location) != -1) {
-                                    if (startAttrName) {
-                                        directive = inherit(directive, {
+                                    directive.restrict.indexOf(location) != -1) {   // 如果未传入优先级，或者大于指令的优先级，并且restrict有location的字段
+                                    if (startAttrName) {                    // 如果有传入startAttrName
+                                        directive = inherit(directive, {    // 创建一个directive实例，自定义$$start, $$end属性
                                             $$start: startAttrName,
                                             $$end: endAttrName
                                         });
                                     }
-                                    tDirectives.push(directive);
-                                    match = directive;
+                                    tDirectives.push(directive);            // 将指令信息对象插入到tDirectives
+                                    match = directive;                      // 
                                 }
                             } catch (e) {
                                 $exceptionHandler(e);
                             }
                         }
                     }
-                    return match;
+                    return match;                                           // 返回指令信息对象
                 }
 
 
@@ -7869,13 +7869,13 @@
                  * @returns true if directive was registered as multi-element.
                  */
 
-                function directiveIsMultiElement(name) {
+                function directiveIsMultiElement(name) {                     // 判断是否多个元素,如果是ng-if, ng-repeat, ng-show, ng-hide, ng-switch-when, ng-switch-default,返回true               
                     if (hasDirectives.hasOwnProperty(name)) {
                         for (var directive, directives = $injector.get(name + Suffix),
                                 i = 0, ii = directives.length; i < ii; i++) {
                             directive = directives[i];
-                            if (directive.multiElement) {
-                                return true;
+                            if (directive.multiElement) {                    // 如果是ng-if, ng-repeat, ng-show, ng-hide, ng-switch-when, ng-switch-default
+                                return true;                                  
                             }
                         }
                     }
@@ -8288,7 +8288,7 @@
         ];
     }
 
-    var PREFIX_REGEXP = /^(x[\:\-_]|data[\:\-_])/i;
+    var PREFIX_REGEXP = /^(x[\:\-_]|data[\:\-_])/i;     // 匹配x:, x-, x_, data:, data-, data_，忽略小写
     /**
      * Converts all accepted directives format into proper directive name.
      * All of these will become 'myDirective':
@@ -8301,8 +8301,8 @@
      * @param name Name to normalize
      */
 
-    function directiveNormalize(name) {
-        return camelCase(name.replace(PREFIX_REGEXP, ''));
+    function directiveNormalize(name) {                   // 规范指令
+        return camelCase(name.replace(PREFIX_REGEXP, ''));      // 去掉x:, x-, x_, data:, data-, data_, 再转成驼峰式
     }
 
     /**
@@ -8374,7 +8374,7 @@
         boundTranscludeFn
     ) {}
 
-    function tokenDifference(str1, str2) {
+    function tokenDifference(str1, str2) {            // 去掉相同的类名
         var values = '',
             tokens1 = str1.split(/\s+/),
             tokens2 = str2.split(/\s+/);
@@ -13558,7 +13558,7 @@
         var lastDirtyWatch = null;
         var applyAsyncId = null;
 
-        this.digestTtl = function(value) {
+        this.digestTtl = function(value) {                            // 
             if (arguments.length) {
                 TTL = value;
             }
@@ -14433,10 +14433,10 @@
                      *    - `function(scope)`: execute the function with the current `scope` parameter.
                      *
                      */
-                    $evalAsync: function(expr) {
+                    $evalAsync: function(expr) {                        // 
                         // if we are outside of an $digest loop and this is the first time we are scheduling async
                         // task also schedule async auto-flush
-                        if (!$rootScope.$$phase && !asyncQueue.length) {
+                        if (!$rootScope.$$phase && !asyncQueue.length) {    // 
                             $browser.defer(function() {
                                 if (asyncQueue.length) {
                                     $rootScope.$digest();
