@@ -7173,43 +7173,43 @@
                         case NODE_TYPE_ELEMENT:
                             /* Element */
                             // use the node name: <directive>
-                            addDirective(directives,                  // 调用adDirectives添加指令
+                            addDirective(directives,                  // 调用addDirectives添加指令
                                 directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);
 
                             // iterate over the attributes
                             for (var attr, name, nName, ngAttrName, value, isNgAttr, nAttrs = node.attributes,
-                                    j = 0, jj = nAttrs && nAttrs.length; j < jj; j++) {     // 
+                                    j = 0, jj = nAttrs && nAttrs.length; j < jj; j++) {     // 遍历ngAttrs
                                 var attrStartName = false;
                                 var attrEndName = false;
 
-                                attr = nAttrs[j];
-                                name = attr.name;
-                                value = trim(attr.value);
+                                attr = nAttrs[j];                                             // 获取元素的NameNodeMap对象
+                                name = attr.name;                                             // 特性名
+                                value = trim(attr.value);                                     // 去掉头尾空格
 
                                 // support ngAttr attribute binding
-                                ngAttrName = directiveNormalize(name);                      // 规范ng-xx属性名
-                                if (isNgAttr = NG_ATTR_BINDING.test(ngAttrName)) {          // 如果名为ngAttrXX
-                                    name = snake_case(ngAttrName.substr(6), '-');           // 将ngAttr替换为-
+                                ngAttrName = directiveNormalize(name);                        // 支持ngAttr, 规范ng-xx属性名, 统一转成驼峰式
+                                if (isNgAttr = NG_ATTR_BINDING.test(ngAttrName)) {            // 如果名为ngAttrXX
+                                    name = snake_case(ngAttrName.substr(6), '-');             // 将ngAttr替换为-
                                 }
 
-                                var directiveNName = ngAttrName.replace(/(Start|End)$/, ''); // 去掉结尾的Start或者End
-                                if (directiveIsMultiElement(directiveNName)) {               // 
-                                    if (ngAttrName === directiveNName + 'Start') {
-                                        attrStartName = name;
-                                        attrEndName = name.substr(0, name.length - 5) + 'end';
-                                        name = name.substr(0, name.length - 6);
+                                var directiveNName = ngAttrName.replace(/(Start|End)$/, '');  // 去掉结尾的Start或者End
+                                if (directiveIsMultiElement(directiveNName)) {                // 调用directiveIsMultiElement(directiveName)判断是否多元素指令
+                                    if (ngAttrName === directiveNName + 'Start') {            // 如果ngAttrName有Start, 比如指令为ng-if-start
+                                        attrStartName = name;                                 // 把名赋值给attrStartName, attrEndName, 分别对应ng-if-start, ng-if-end
+                                        attrEndName = name.substr(0, name.length - 5) + 'end';  
+                                        name = name.substr(0, name.length - 6);               // 去掉start, 得到ng-if
                                     }
                                 }
 
-                                nName = directiveNormalize(name.toLowerCase());
-                                attrsMap[nName] = name;
-                                if (isNgAttr || !attrs.hasOwnProperty(nName)) {
-                                    attrs[nName] = value;
-                                    if (getBooleanAttrName(node, nName)) {
+                                nName = directiveNormalize(name.toLowerCase());               // 把指令名转成小写，再转成驼峰式
+                                attrsMap[nName] = name;                                       // 保存指令名，以ngIf为属性，ng-if为值保存到attrsMap对象上
+                                if (isNgAttr || !attrs.hasOwnProperty(nName)) {               // 如果指令名是以ngAttr开头的，或者attrs(Attributes实例)对象中没有nName
+                                    attrs[nName] = value;                                     // 保存指令值到attrs对象上，属性名为指令名的驼峰式, 值为value
+                                    if (getBooleanAttrName(node, nName)) {                    // 如果是布尔型特性名，重置为true
                                         attrs[nName] = true; // presence means true
                                     }
                                 }
-                                addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);
+                                addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);        // 
                                 addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,
                                     attrEndName);
                             }
@@ -8119,8 +8119,8 @@
                 }
 
 
-                function addAttrInterpolateDirective(node, directives, value, name, allOrNothing) {
-                    var interpolateFn = $interpolate(value, true);
+                function addAttrInterpolateDirective(node, directives, value, name, allOrNothing) {           // 
+                    var interpolateFn = $interpolate(value, true);            // 
 
                     // no interpolation found -> ignore
                     if (!interpolateFn) return;
@@ -10103,27 +10103,27 @@
                  * - `context`: evaluation context for all expressions embedded in the interpolated text
                  */
 
-                function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {                         // 插入
-                    allOrNothing = !! allOrNothing;
+                function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {                 //                    // 插入
+                    allOrNothing = !! allOrNothing;                         // 
                     var startIndex,
                         endIndex,
                         index = 0,
-                        expressions = [],
+                        expressions = [],   
                         parseFns = [],
-                        textLength = text.length,
+                        textLength = text.length,                           // 文本字数
                         exp,
                         concat = [],
                         expressionPositions = [];
 
-                    while (index < textLength) {
-                        if (((startIndex = text.indexOf(startSymbol, index)) != -1) &&
+                    while (index < textLength) {                            // 
+                        if (((startIndex = text.indexOf(startSymbol, index)) != -1) &&    // 如果有'{{'和'}}'
                             ((endIndex = text.indexOf(endSymbol, startIndex + startSymbolLength)) != -1)) {
-                            if (index !== startIndex) {
-                                concat.push(unescapeText(text.substring(index, startIndex)));
+                            if (index !== startIndex) {                     // 如果'{{'不是开始位置，可能有空格或其它字符
+                                concat.push(unescapeText(text.substring(index, startIndex)));   // 把'\{', '\}'转成'{', '}'
                             }
-                            exp = text.substring(startIndex + startSymbolLength, endIndex);
-                            expressions.push(exp);
-                            parseFns.push($parse(exp, parseStringifyInterceptor));
+                            exp = text.substring(startIndex + startSymbolLength, endIndex);     // 获取第一个'{{', '}}'中的字符
+                            expressions.push(exp);                                              // 插入到expressions数组中
+                            parseFns.push($parse(exp, parseStringifyInterceptor));        // 
                             index = endIndex + endSymbolLength;
                             expressionPositions.push(concat.length);
                             concat.push('');
@@ -10215,12 +10215,12 @@
                         });
                     }
 
-                    function unescapeText(text) {
+                    function unescapeText(text) {                           // 将'\{', '\}'转成'{', '}'
                         return text.replace(escapedStartRegexp, startSymbol).
                         replace(escapedEndRegexp, endSymbol);
                     }
 
-                    function parseStringifyInterceptor(value) {
+                    function parseStringifyInterceptor(value) {             // 
                         try {
                             return stringify(getValue(value));
                         } catch (err) {
@@ -10231,7 +10231,7 @@
                     }
                 }
 
-
+                window.$interpolate = $interpolate;
                 /**
                  * @ngdoc method
                  * @name $interpolate#startSymbol
@@ -11774,35 +11774,35 @@
     Lexer.prototype = {
         constructor: Lexer,
 
-        lex: function(text) {
+        lex: function(text) {                           // 解释字符表达式text, 将结果保存到this.tokens中。
             this.text = text;
             this.index = 0;
             this.ch = undefined;
             this.tokens = [];
 
-            while (this.index < this.text.length) {
-                this.ch = this.text.charAt(this.index);
-                if (this.is('"\'')) {
-                    this.readString(this.ch);
-                } else if (this.isNumber(this.ch) || this.is('.') && this.isNumber(this.peek())) {
-                    this.readNumber();
-                } else if (this.isIdent(this.ch)) {
-                    this.readIdent();
-                } else if (this.is('(){}[].,;:?')) {
+            while (this.index < this.text.length) {     // 
+                this.ch = this.text.charAt(this.index);     // 获取第一个字符
+                if (this.is('"\'')) {                   // 检测是否单引或双引
+                    this.readString(this.ch);           // 解释为字符串
+                } else if (this.isNumber(this.ch) || this.is('.') && this.isNumber(this.peek())) {    // 如果是数字字符或者 '.'开头并且字符数大于等于2
+                    this.readNumber();                  // 解释为数字
+                } else if (this.isIdent(this.ch)) {     // 如果ch为字母，下划线，美元符号
+                    this.readIdent();                   // 调用.readIdent()方法把表达分割成多个对象，保存到tokens数组中
+                } else if (this.is('(){}[].,;:?')) {    // 如果遇到这些符号，保存信息
                     this.tokens.push({
                         index: this.index,
                         text: this.ch
                     });
                     this.index++;
-                } else if (this.isWhitespace(this.ch)) {
+                } else if (this.isWhitespace(this.ch)) {  // 如果遇到空格字符，index+1
                     this.index++;
-                } else {
-                    var ch2 = this.ch + this.peek();
-                    var ch3 = ch2 + this.peek(2);
-                    var fn = OPERATORS[this.ch];
+                } else {                                  // 否则认识是运算符，如'/', '=='
+                    var ch2 = this.ch + this.peek();      // 获取前两个字符'/g'
+                    var ch3 = ch2 + this.peek(2);         // 获取前三个字符'/gr'
+                    var fn = OPERATORS[this.ch];          // 获取前三个字符在OPERATORS对应的运算符函数
                     var fn2 = OPERATORS[ch2];
                     var fn3 = OPERATORS[ch3];
-                    if (fn3) {
+                    if (fn3) {                            // 如果fn3,fn2,fn存在，保存信息
                         this.tokens.push({
                             index: this.index,
                             text: ch3,
@@ -11831,16 +11831,16 @@
             return this.tokens;
         },
 
-        is: function(chars) {
+        is: function(chars) {                     // 判断参数chars是否this.ch。
             return chars.indexOf(this.ch) !== -1;
         },
 
-        peek: function(i) {
+        peek: function(i) {                       // 
             var num = i || 1;
             return (this.index + num < this.text.length) ? this.text.charAt(this.index + num) : false;
         },
 
-        isNumber: function(ch) {
+        isNumber: function(ch) {                  // 判断参数ch是否数字字符
             return ('0' <= ch && ch <= '9');
         },
 
@@ -11850,13 +11850,13 @@
                 ch === '\n' || ch === '\v' || ch === '\u00A0');
         },
 
-        isIdent: function(ch) {
+        isIdent: function(ch) {                  // 判断ch是不是字母或'_'或'$'
             return ('a' <= ch && ch <= 'z' ||
                 'A' <= ch && ch <= 'Z' ||
                 '_' === ch || ch === '$');
         },
 
-        isExpOperator: function(ch) {
+        isExpOperator: function(ch) {            // 判断ch是不是'-', '+', 或者数字字符
             return (ch === '-' || ch === '+' || this.isNumber(ch));
         },
 
@@ -11867,22 +11867,22 @@
                 error, colStr, this.text);
         },
 
-        readNumber: function() {
+        readNumber: function() {                            // 当前字符为数字，处理有e的情况，合并到number，保存信息。
             var number = '';
             var start = this.index;
             while (this.index < this.text.length) {
-                var ch = lowercase(this.text.charAt(this.index));
-                if (ch == '.' || this.isNumber(ch)) {
-                    number += ch;
+                var ch = lowercase(this.text.charAt(this.index));       // 获取第一个字符
+                if (ch == '.' || this.isNumber(ch)) {                   // 如果是'.'，表示是小数，或者是0-9
+                    number += ch;                                       // 合并ch到number中
                 } else {
-                    var peekCh = this.peek();
-                    if (ch == 'e' && this.isExpOperator(peekCh)) {
-                        number += ch;
-                    } else if (this.isExpOperator(ch) &&
+                    var peekCh = this.peek();                           // 获取下一个字符
+                    if (ch == 'e' && this.isExpOperator(peekCh)) {      // 如果当前字符ch是'e'并且下一个字符是'-', '+', 或者是数字，说明是自然对数10N次方e-10, e10, 
+                        number += ch;                                   // 合并'e'到number中
+                    } else if (this.isExpOperator(ch) &&                // 如果是'9e-/+/10', 直接加上-/+/1
                         peekCh && this.isNumber(peekCh) &&
                         number.charAt(number.length - 1) == 'e') {
-                        number += ch;
-                    } else if (this.isExpOperator(ch) &&
+                        number += ch;               
+                    } else if (this.isExpOperator(ch) &&                // 否则抛出异常
                         (!peekCh || !this.isNumber(peekCh)) &&
                         number.charAt(number.length - 1) == 'e') {
                         this.throwError('Invalid exponent');
@@ -11892,7 +11892,7 @@
                 }
                 this.index++;
             }
-            number = 1 * number;
+            number = 1 * number;                                        // 转成正数
             this.tokens.push({
                 index: start,
                 text: number,
@@ -11903,7 +11903,7 @@
             });
         },
 
-        readIdent: function() {
+        readIdent: function() {                   // 字符表达式中有调用的函数。将分成路径，点号，和方法三个部分，分别保存在this.tokens上
             var expression = this.text;
 
             var ident = '';
@@ -11911,11 +11911,11 @@
 
             var lastDot, peekIndex, methodName, ch;
 
-            while (this.index < this.text.length) {
+            while (this.index < this.text.length) {                   // 遍历整个字符，记录最后点号位置, 去除'(' ,')'
                 ch = this.text.charAt(this.index);
-                if (ch === '.' || this.isIdent(ch) || this.isNumber(ch)) {
-                    if (ch === '.') lastDot = this.index;
-                    ident += ch;
+                if (ch === '.' || this.isIdent(ch) || this.isNumber(ch)) {  // 开头字符是'.', 英文字母, '_', '$', 或者数字字符
+                    if (ch === '.') lastDot = this.index;                   // 如果开关字符是'.', 把this.index赋值给lastDot,最后点号的位置
+                    ident += ch;                                      // ident加上ch
                 } else {
                     break;
                 }
@@ -11923,41 +11923,41 @@
             }
 
             //check if the identifier ends with . and if so move back one char
-            if (lastDot && ident[ident.length - 1] === '.') {
-                this.index--;
-                ident = ident.slice(0, -1);
-                lastDot = ident.lastIndexOf('.');
-                if (lastDot === -1) {
+            if (lastDot && ident[ident.length - 1] === '.') {         // 如果有lastDot, 并且最后一个字符为'.'
+                this.index--;                                         // 去掉最后的'.'
+                ident = ident.slice(0, -1);                     
+                lastDot = ident.lastIndexOf('.');                     // 重置lastDot, 记录最后的'.'位置
+                if (lastDot === -1) {                                 // 如果没有'.'，重置为undefined
                     lastDot = undefined;
                 }
             }
 
             //check if this is not a method invocation and if it is back out to last dot
-            if (lastDot) {
-                peekIndex = this.index;
-                while (peekIndex < this.text.length) {
-                    ch = this.text.charAt(peekIndex);
-                    if (ch === '(') {
-                        methodName = ident.substr(lastDot - start + 1);
-                        ident = ident.substr(0, lastDot - start);
-                        this.index = peekIndex;
+            if (lastDot) {                                            // 如果有lastDot
+                peekIndex = this.index;                               
+                while (peekIndex < this.text.length) {                // 如果peekIndex小于被解释字符长度，说明被解释字符含最后含有'.'
+                    ch = this.text.charAt(peekIndex);                 // 获取最后一个字符
+                    if (ch === '(') {                                 // 如果最后个字符为'('，说明执行方法
+                        methodName = ident.substr(lastDot - start + 1);     // 获取方法名
+                        ident = ident.substr(0, lastDot - start);     // 截取上下文对象, 如 this.text = 'greet.ing()', 截取到greet
+                        this.index = peekIndex;                       // this.index为方法执行前的字符串
                         break;
                     }
-                    if (this.isWhitespace(ch)) {
-                        peekIndex++;
+                    if (this.isWhitespace(ch)) {                      // 是空格字符, peekIndex加1
+                        peekIndex++;  
                     } else {
                         break;
                     }
                 }
             }
 
-            this.tokens.push({
+            this.tokens.push({                                        // 把start字符，ident上下文，方法fn以对象的形式插入到tokens中
                 index: start,
                 text: ident,
                 fn: CONSTANTS[ident] || getterFn(ident, this.options, expression)
             });
 
-            if (methodName) {
+            if (methodName) {                                         // 如果有方法，把表达分成三个对象分别保存信息，如greet.ing(), 分成greet对象，',', ing方法，
                 this.tokens.push({
                     index: lastDot,
                     text: '.'
@@ -11969,37 +11969,37 @@
             }
         },
 
-        readString: function(quote) {
+        readString: function(quote) {                                 // 参数quote为引号。如果表达中含有'\u'，Unicode字符，可能含有转义字符，需要转成字符串。并保存信息到this.tokens中
             var start = this.index;
             this.index++;
             var string = '';
-            var rawString = quote;
+            var rawString = quote;                                    // 未加工的字符串
             var escape = false;
-            while (this.index < this.text.length) {
+            while (this.index < this.text.length) {                   // 
                 var ch = this.text.charAt(this.index);
                 rawString += ch;
                 if (escape) {
-                    if (ch === 'u') {
-                        var hex = this.text.substring(this.index + 1, this.index + 5);
-                        if (!hex.match(/[\da-f]{4}/i))
+                    if (ch === 'u') {                                 // 如果是Unicode码的字符
+                        var hex = this.text.substring(this.index + 1, this.index + 5);    // 截取'\u'后四位数字
+                        if (!hex.match(/[\da-f]{4}/i))                // 如果不是四位数字或者a-f
                             this.throwError('Invalid unicode escape [\\u' + hex + ']');
-                        this.index += 4;
-                        string += String.fromCharCode(parseInt(hex, 16));
+                        this.index += 4;                              // 重置this.index，从Unicode后面开始算
+                        string += String.fromCharCode(parseInt(hex, 16));     // 将Unicode字符转成字符串，合并到string中
                     } else {
-                        var rep = ESCAPE[ch];
-                        string = string + (rep || ch);
+                        var rep = ESCAPE[ch];                         // 否则可能是\", \', \f, \n', \r, \t, \v转义字符中的一种
+                        string = string + (rep || ch);                // 如果匹配到转义字符，合并到string中，否则合并第一个字符ch
                     }
                     escape = false;
-                } else if (ch === '\\') {
+                } else if (ch === '\\') {                             // 如果为'\', 设置escape为true
                     escape = true;
-                } else if (ch === quote) {
-                    this.index++;
-                    this.tokens.push({
-                        index: start,
-                        text: rawString,
-                        string: string,
-                        constant: true,
-                        fn: function() {
+                } else if (ch === quote) {                            // 如果是结束引号
+                    this.index++;   
+                    this.tokens.push({                                // 保存信息到this.tokens
+                        index: start,                                 // 开始位置
+                        text: rawString,                              // 未加工的字符串
+                        string: string,                               // 编译后转化的字符串
+                        constant: true,                               // 是否连续的
+                        fn: function() {                              // 返回一个函数，执行函数返回未加工的字符串
                             return string;
                         }
                     });
@@ -12037,11 +12037,11 @@
     Parser.prototype = {
         constructor: Parser,
 
-        parse: function(text) {
-            this.text = text;
-            this.tokens = this.lexer.lex(text);
+        parse: function(text) {                             // 
+            this.text = text;                               // 保存text
+            this.tokens = this.lexer.lex(text);             // 解释text表达式，将结果保存到this.tokens中。
 
-            var value = this.statements();
+            var value = this.statements();                  // 
 
             if (this.tokens.length !== 0) {
                 this.throwError('is an unexpected token', this.tokens[0]);
@@ -12055,27 +12055,27 @@
 
         primary: function() {
             var primary;
-            if (this.expect('(')) {
-                primary = this.filterChain();
+            if (this.expect('(')) {                         // 如果是'('开头
+                primary = this.filterChain();               // 
                 this.consume(')');
-            } else if (this.expect('[')) {
-                primary = this.arrayDeclaration();
-            } else if (this.expect('{')) {
-                primary = this.object();
+            } else if (this.expect('[')) {                  // 如果是'['开头，说明是数组
+                primary = this.arrayDeclaration();          // 调用.arrayDeclaration()转成数组
+            } else if (this.expect('{')) {                  // 如果是'{'开头，说明是对象
+                primary = this.object();                    // 调用.object，转成对象
             } else {
-                var token = this.expect();
-                primary = token.fn;
+                var token = this.expect();                  // 取出第一个表达式信息对象
+                primary = token.fn;                         // 获取fn解释方法
                 if (!primary) {
                     this.throwError('not a primary expression', token);
                 }
-                if (token.constant) {
-                    primary.constant = true;
+                if (token.constant) {                       // 如果constant，说明是数字或者是引号字符串
+                    primary.constant = true;                // 设置constant为true, literal为true
                     primary.literal = true;
                 }
             }
 
             var next, context;
-            while ((next = this.expect('(', '[', '.'))) {
+            while ((next = this.expect('(', '[', '.'))) {   // 
                 if (next.text === '(') {
                     primary = this.functionCall(primary, context);
                     context = null;
@@ -12104,9 +12104,9 @@
             return this.tokens[0];
         },
 
-        peek: function(e1, e2, e3, e4) {
+        peek: function(e1, e2, e3, e4) {                  // 判断是不是e1, e2, e3, e4其中一个字符，如果是，返回token，如果没有传入参数，返回token，否则返回false。
             if (this.tokens.length > 0) {
-                var token = this.tokens[0];
+                var token = this.tokens[0];               
                 var t = token.text;
                 if (t === e1 || t === e2 || t === e3 || t === e4 ||
                     (!e1 && !e2 && !e3 && !e4)) {
@@ -12116,7 +12116,7 @@
             return false;
         },
 
-        expect: function(e1, e2, e3, e4) {
+        expect: function(e1, e2, e3, e4) {                // 
             var token = this.peek(e1, e2, e3, e4);
             if (token) {
                 this.tokens.shift();
@@ -12149,11 +12149,11 @@
             });
         },
 
-        statements: function() {
+        statements: function() {                                // 
             var statements = [];
-            while (true) {
-                if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))
-                    statements.push(this.filterChain());
+            while (true) {                                      
+                if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))   // 如果表达式不是以'}', ')', ';', ']'开头的
+                    statements.push(this.filterChain());                        // 调用filterChain()，把结果插入到statements数组中。
                 if (!this.expect(';')) {
                     // optimize for the common case where there is only one statement.
                     // TODO(size): maybe we should not support multiple statements?
@@ -12168,8 +12168,8 @@
             }
         },
 
-        filterChain: function() {
-            var left = this.expression();
+        filterChain: function() {                               // 
+            var left = this.expression();                       // 调用this.expression();
             var token;
             while ((token = this.expect('|'))) {
                 left = this.filter(left);
@@ -12213,7 +12213,7 @@
             });
         },
 
-        expression: function() {
+        expression: function() {                          // 调用.assignment()方法，返回
             return this.assignment();
         },
 
@@ -12315,8 +12315,8 @@
 
         unary: function() {
             var token;
-            if (this.expect('+')) {
-                return this.primary();
+            if (this.expect('+')) {       // 如果第一个字符为'+'
+                return this.primary();    // 
             } else if ((token = this.expect('-'))) {
                 return this.binaryFn(Parser.ZERO, token.fn, this.unary());
             } else if ((token = this.expect('!'))) {
@@ -12528,7 +12528,7 @@
         };
     }
 
-    function getterFn(path, options, fullExp) {
+    function getterFn(path, options, fullExp) {               // 获取方法，其中path为路径，options为选项，fullExp为全表达式
         var fn = getterFnCache[path];
 
         if (fn) return fn;
@@ -12662,23 +12662,23 @@
                     return wrapped;
                 }
 
-                return function $parse(exp, interceptorFn) {
+                return function $parse(exp, interceptorFn) {                  // 解释
                     var parsedExpression, oneTime, cacheKey;
 
                     switch (typeof exp) {
                         case 'string':
-                            cacheKey = exp = exp.trim();
+                            cacheKey = exp = exp.trim();                      // 去掉头尾空格
 
-                            parsedExpression = cache[cacheKey];
+                            parsedExpression = cache[cacheKey];               // 获取解释的表达式
 
-                            if (!parsedExpression) {
-                                if (exp.charAt(0) === ':' && exp.charAt(1) === ':') {
-                                    oneTime = true;
-                                    exp = exp.substring(2);
+                            if (!parsedExpression) {                          // 如果获取不到
+                                if (exp.charAt(0) === ':' && exp.charAt(1) === ':') {       // 如果表达式前两个字符为 '::''
+                                    oneTime = true;                           // 设置oneTime为true
+                                    exp = exp.substring(2);                   // 去掉::
                                 }
 
-                                var lexer = new Lexer($parseOptions);
-                                var parser = new Parser(lexer, $filter, $parseOptions);
+                                var lexer = new Lexer($parseOptions);         // 创建一个Lexer对象，自定义属性options为$parseOptions
+                                var parser = new Parser(lexer, $filter, $parseOptions);       // 
                                 parsedExpression = parser.parse(exp);
 
                                 if (parsedExpression.constant) {

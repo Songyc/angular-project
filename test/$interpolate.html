@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body ng-app="myApp">
+	<div class="test" ng-controller="myController">
+		test
+	</div>
+	<script src="../js/angular.js"></script>
+	<script>
+	var myModule = angular.module('myApp', []);
+	myModule.controller('myController', ['$scope', function () {
+		var context = {greeting: 'Hello', name: 'world' };
+        var exp = $interpolate('xx{{+greet.ing(1231)}} {{name}}!');
+        console.log(expect(exp(context)).toEqual('Hello !'));
+        
+		// console.log($interpolate);
+	}]);
+	</script>
+</body>
+</html>
