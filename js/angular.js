@@ -12037,28 +12037,28 @@
     Parser.prototype = {
         constructor: Parser,
 
-        parse: function(text) {                             // 
+        parse: function(text) {                             // 解释文本表达式
             this.text = text;                               // 保存text
             this.tokens = this.lexer.lex(text);             // 解释text表达式，将结果保存到this.tokens中。
 
-            var value = this.statements();                  // 
+            var value = this.statements();                  // 获取解释状态函数
 
             if (this.tokens.length !== 0) {
                 this.throwError('is an unexpected token', this.tokens[0]);
             }
 
-            value.literal = !! value.literal;
+            value.literal = !! value.literal;              // 赋值literal, constant属性
             value.constant = !! value.constant;
 
             return value;
         },
 
-        primary: function() {
+        primary: function() {                               // 
             var primary;
-            if (this.expect('(')) {                         // 如果是'('开头
+            if (this.expect('(')) {                         // 如果是'('开头，调用filterChain再次过滤，因为参数中可能存在表达式
                 primary = this.filterChain();               // 
                 this.consume(')');
-            } else if (this.expect('[')) {                  // 如果是'['开头，说明是数组
+            } else if (this.expect('[')) {                  // 如果是'['开头，说明是数组，去掉第一个表达式信息对象'['
                 primary = this.arrayDeclaration();          // 调用.arrayDeclaration()转成数组
             } else if (this.expect('{')) {                  // 如果是'{'开头，说明是对象
                 primary = this.object();                    // 调用.object，转成对象
@@ -12098,13 +12098,13 @@
                 token.text, msg, (token.index + 1), this.text, this.text.substring(token.index));
         },
 
-        peekToken: function() {
+        peekToken: function() {                           // 返回第一个表达式信息对象
             if (this.tokens.length === 0)
                 throw $parseMinErr('ueoe', 'Unexpected end of expression: {0}', this.text);
             return this.tokens[0];
         },
 
-        peek: function(e1, e2, e3, e4) {                  // 判断是不是e1, e2, e3, e4其中一个字符，如果是，返回token，如果没有传入参数，返回token，否则返回false。
+        peek: function(e1, e2, e3, e4) {                  // 判断第一个表达式信息对象的text是不是e1, e2, e3, e4其中一个字符，如果是，则返回表达式信息对象，如果没有传入参数，返回token，否则返回false。
             if (this.tokens.length > 0) {
                 var token = this.tokens[0];               
                 var t = token.text;
@@ -12116,9 +12116,9 @@
             return false;
         },
 
-        expect: function(e1, e2, e3, e4) {                // 
-            var token = this.peek(e1, e2, e3, e4);
-            if (token) {
+        expect: function(e1, e2, e3, e4) {                // 期望是e1, e2, e3, e4中
+            var token = this.peek(e1, e2, e3, e4);        // 调用.peek方法获取当前表达式对象信息，如果是e1, e2, e3, e4中的一个，返回对应的表达式信息对象。
+            if (token) {                                  // 
                 this.tokens.shift();
                 return token;
             }
@@ -12140,7 +12140,7 @@
             });
         },
 
-        binaryFn: function(left, fn, right, isBranching) {
+        binaryFn: function(left, fn, right, isBranching) {                  // 
             return extend(function $parseBinaryFn(self, locals) {
                 return fn(self, locals, left, right);
             }, {
@@ -12149,17 +12149,17 @@
             });
         },
 
-        statements: function() {                                // 
+        statements: function() {                                // 获取解释状态函数，执行该函数会返回表达式解释后的字符
             var statements = [];
             while (true) {                                      
                 if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))   // 如果表达式不是以'}', ')', ';', ']'开头的
                     statements.push(this.filterChain());                        // 调用filterChain()，把结果插入到statements数组中。
-                if (!this.expect(';')) {
-                    // optimize for the common case where there is only one statement.
+                if (!this.expect(';')) {                                        // 如果没有分号
+                    // optimize for the common case where there is only one statement.  
                     // TODO(size): maybe we should not support multiple statements?
-                    return (statements.length === 1) ? statements[0] : function $parseStatements(self, locals) {
-                        var value;
-                        for (var i = 0, ii = statements.length; i < ii; i++) {
+                    return (statements.length === 1) ? statements[0] : function $parseStatements(self, locals) {      // statements只有一个元素，直接返回。否则返回$parseStatements
+                        var value;                        
+                        for (var i = 0, ii = statements.length; i < ii; i++) {  // 遍历statements，执行statements中的元素方法，返回解释后的值
                             value = statements[i](self, locals);
                         }
                         return value;
@@ -12169,7 +12169,7 @@
         },
 
         filterChain: function() {                               // 
-            var left = this.expression();                       // 调用this.expression();
+            var left = this.expression();                       // 调用this.expression()，获取解释表达式函数
             var token;
             while ((token = this.expect('|'))) {
                 left = this.filter(left);
@@ -12177,33 +12177,33 @@
             return left;
         },
 
-        filter: function(inputFn) {
-            var token = this.expect();
-            var fn = this.$filter(token.text);
+        filter: function(inputFn) {                             // 过滤函数filter，inputFn为过滤的解释表达式函数
+            var token = this.expect();                          // 过滤条件
+            var fn = this.$filter(token.text);                  // 获取过滤函数
             var argsFn;
             var args;
 
-            if (this.peek(':')) {
-                argsFn = [];
+            if (this.peek(':')) {                               // 如果是currency : symbol的过滤形式
+                argsFn = [];                                    // 
                 args = []; // we can safely reuse the array
                 while (this.expect(':')) {
-                    argsFn.push(this.expression());
+                    argsFn.push(this.expression());             // 获取表达式解释过滤器右边部分函数
                 }
             }
 
-            var inputs = [inputFn].concat(argsFn || []);
+            var inputs = [inputFn].concat(argsFn || []);        // inputFn, argsFn解释函数合并到inputs数组中
 
-            return extend(function $parseFilter(self, locals) {
-                var input = inputFn(self, locals);
-                if (args) {
-                    args[0] = input;
+            return extend(function $parseFilter(self, locals) {     // 返回解释过滤函数$parseFilter
+                var input = inputFn(self, locals);              // 执行inputFn，返回解释值
+                if (args) {                                     // 
+                    args[0] = input;                            // 把结果写入args中
 
-                    var i = argsFn.length;
+                    var i = argsFn.length;                      // 执行解释过滤器右边部分函数，返回过滤值，并插入到args中
                     while (i--) {
-                        args[i + 1] = argsFn[i](self, locals);
+                        args[i + 1] = argsFn[i](self, locals);  // 
                     }
 
-                    return fn.apply(undefined, args);
+                    return fn.apply(undefined, args);           // 调用过滤函数过滤args中的值
                 }
 
                 return fn(input);
@@ -12403,10 +12403,10 @@
         },
 
         // This is used with json array declaration
-        arrayDeclaration: function() {
+        arrayDeclaration: function() {                            // 用于JSON数组声明。解释数组中的内容
             var elementFns = [];
-            if (this.peekToken().text !== ']') {
-                do {
+            if (this.peekToken().text !== ']') {                  // 如果不是最后一个
+                do {                                              // 遍历数组中的内容
                     if (this.peek(']')) {
                         // Support trailing commas per ES5.1.
                         break;
@@ -12417,38 +12417,38 @@
             }
             this.consume(']');
 
-            return extend(function $parseArrayLiteral(self, locals) {
+            return extend(function $parseArrayLiteral(self, locals) {     // 返回解释数组原义函数$parseArrayLiteral, 
                 var array = [];
-                for (var i = 0, ii = elementFns.length; i < ii; i++) {
+                for (var i = 0, ii = elementFns.length; i < ii; i++) {    // 遍历elementsFns，创建一个数组，把返回的结果放入数组中。
                     array.push(elementFns[i](self, locals));
                 }
                 return array;
             }, {
                 literal: true,
-                constant: elementFns.every(isConstant),
+                constant: elementFns.every(isConstant),                   // 检测数组elementFns中每个元素constant属性为true, 如果是返回true，否则为false。
                 inputs: elementFns
             });
         },
 
-        object: function() {
+        object: function() {                        // 用于解释json对象
             var keys = [],
                 valueFns = [];
-            if (this.peekToken().text !== '}') {
+            if (this.peekToken().text !== '}') {    // 如果为'}', 结束遍历
                 do {
                     if (this.peek('}')) {
                         // Support trailing commas per ES5.1.
                         break;
                     }
-                    var token = this.expect();
-                    keys.push(token.string || token.text);
-                    this.consume(':');
-                    var value = this.expression();
-                    valueFns.push(value);
-                } while (this.expect(','));
+                    var token = this.expect();      // 获取当前的表达式信息对象
+                    keys.push(token.string || token.text);    // 获取对象的key值
+                    this.consume(':');              // 如果没有: 则报错
+                    var value = this.expression();  // 调用.expression()获取一个解释表达式的函数
+                    valueFns.push(value);           // 把函数插入到valueFns中
+                } while (this.expect(','));         // 遇到，解释下一组键值对
             }
             this.consume('}');
 
-            return extend(function $parseObjectLiteral(self, locals) {
+            return extend(function $parseObjectLiteral(self, locals) {    // 返回解释对象原义函数$parseObjectLiteral
                 var object = {};
                 for (var i = 0, ii = valueFns.length; i < ii; i++) {
                     object[keys[i]] = valueFns[i](self, locals);
@@ -12456,7 +12456,7 @@
                 return object;
             }, {
                 literal: true,
-                constant: valueFns.every(isConstant),
+                constant: valueFns.every(isConstant),                     // 检测数组elementFns中每个元素constant属性为true, 如果是返回true，否则为false。
                 inputs: valueFns
             });
         }
@@ -16873,18 +16873,18 @@
     function currencyFilter($locale) {
         var formats = $locale.NUMBER_FORMATS;
         return function(amount, currencySymbol, fractionSize) {
-            if (isUndefined(currencySymbol)) {
+            if (isUndefined(currencySymbol)) {                              // 如果currencySymbol没有定义，默认为'$'
                 currencySymbol = formats.CURRENCY_SYM;
             }
 
-            if (isUndefined(fractionSize)) {
+            if (isUndefined(fractionSize)) {                                // 如果没有定义分数，默认为2
                 // TODO: read the default value from the locale file
                 fractionSize = 2;
             }
 
             // if null or undefined pass it through
             return (amount == null) ? amount : formatNumber(amount, formats.PATTERNS[1], formats.GROUP_SEP, formats.DECIMAL_SEP, fractionSize).
-            replace(/\u00A4/g, currencySymbol);
+            replace(/\u00A4/g, currencySymbol);                             // 调用formatNumber格式化数字amount，并替换货币记号
         };
     }
 
@@ -16953,53 +16953,53 @@
 
     var DECIMAL_SEP = '.';
 
-    function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
+    function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {              // 格式化数字。groupSep分组，decimal小数，fractionSize精确位数
         if (!isFinite(number) || isObject(number)) return '';
 
-        var isNegative = number < 0;
-        number = Math.abs(number);
-        var numStr = number + '',
+        var isNegative = number < 0;                // 判断是不是负数
+        number = Math.abs(number);                  // 获取绝对值
+        var numStr = number + '',                   // 转为字符串
             formatedText = '',
             parts = [];
 
-        var hasExponent = false;
-        if (numStr.indexOf('e') !== -1) {
-            var match = numStr.match(/([\d\.]+)e(-?)(\d+)/);
-            if (match && match[2] == '-' && match[3] > fractionSize + 1) {
-                numStr = '0';
-                number = 0;
+        var hasExponent = false;                    // 是否有指数，默认值为false。
+        if (numStr.indexOf('e') !== -1) {           // 如果有e
+            var match = numStr.match(/([\d\.]+)e(-?)(\d+)/);      // 三个分组，第一个分组是e前面的正数，包含小数点，第二个分组是-, 第三个数组是-后面的数，10的负n次方
+            if (match && match[2] == '-' && match[3] > fractionSize + 1) {    // 如果匹配到'-'，并且小数位置大于fractionSize+1, 说明这个数接近于0
+                numStr = '0';                       // numStr赋值为'0'
+                number = 0;                         // number为0
             } else {
-                formatedText = numStr;
+                formatedText = numStr;              // 否则认为继续解释，赋值formatedText为numStr, 标记hasExponent为true
                 hasExponent = true;
             }
         }
 
-        if (!hasExponent) {
-            var fractionLen = (numStr.split(DECIMAL_SEP)[1] || '').length;
+        if (!hasExponent) {                         // 如果没有指数
+            var fractionLen = (numStr.split(DECIMAL_SEP)[1] || '').length;        // 分割小数点, 取小数位数
 
             // determine fractionSize if it is not specified
-            if (isUndefined(fractionSize)) {
-                fractionSize = Math.min(Math.max(pattern.minFrac, fractionLen), pattern.maxFrac);
+            if (isUndefined(fractionSize)) {        // 如果未传入参数fractionSize
+                fractionSize = Math.min(Math.max(pattern.minFrac, fractionLen), pattern.maxFrac);         // 设置fractionSize, 如果小数位数等于大于3，取为3，如果小于等于2，取为2
             }
 
             // safely round numbers in JS without hitting imprecisions of floating-point arithmetics
             // inspired by:
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round
-            number = +(Math.round(+(number.toString() + 'e' + fractionSize)).toString() + 'e' + -fractionSize);
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round  
+            number = +(Math.round(+(number.toString() + 'e' + fractionSize)).toString() + 'e' + -fractionSize);   // 
 
             if (number === 0) {
                 isNegative = false;
             }
 
-            var fraction = ('' + number).split(DECIMAL_SEP);
-            var whole = fraction[0];
-            fraction = fraction[1] || '';
+            var fraction = ('' + number).split(DECIMAL_SEP);                      // 用'.'分割
+            var whole = fraction[0];                                              // 正数
+            fraction = fraction[1] || '';                                         // 小数
 
             var i, pos = 0,
                 lgroup = pattern.lgSize,
                 group = pattern.gSize;
 
-            if (whole.length >= (lgroup + group)) {
+            if (whole.length >= (lgroup + group)) {                               // 十万，亿要加上','格开
                 pos = whole.length - lgroup;
                 for (i = 0; i < pos; i++) {
                     if ((pos - i) % group === 0 && i !== 0) {
@@ -17009,7 +17009,7 @@
                 }
             }
 
-            for (i = pos; i < whole.length; i++) {
+            for (i = pos; i < whole.length; i++) {                                // 千位要加上','格开
                 if ((whole.length - i) % lgroup === 0 && i !== 0) {
                     formatedText += groupSep;
                 }
@@ -17017,14 +17017,14 @@
             }
 
             // format fraction part.
-            while (fraction.length < fractionSize) {
+            while (fraction.length < fractionSize) {                              // 如果小数位不够，加0补充
                 fraction += '0';
             }
 
-            if (fractionSize && fractionSize !== "0") formatedText += decimalSep + fraction.substr(0, fractionSize);
+            if (fractionSize && fractionSize !== "0") formatedText += decimalSep + fraction.substr(0, fractionSize);      // 拼接字符串，截取小数位数
         } else {
 
-            if (fractionSize > 0 && number > -1 && number < 1) {
+            if (fractionSize > 0 && number > -1 && number < 1) {                  // 
                 formatedText = number.toFixed(fractionSize);
             }
         }

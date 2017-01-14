@@ -13,9 +13,8 @@
 	var myModule = angular.module('myApp', []);
 	myModule.controller('myController', ['$scope', function () {
 		var context = {greeting: 'Hello', name: 'world' };
-        var exp = $interpolate('xx{{+greet.ing(1231)}} {{name}}!');
-        console.log(expect(exp(context)).toEqual('Hello !'));
-        
+        var exp = $interpolate('{{ 2311234.45 | currency : "USD$" }} {{name}}!');
+        console.log(exp(context));
 		// console.log($interpolate);
 	}]);
 	</script>
