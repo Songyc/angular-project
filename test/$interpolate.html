@@ -11,11 +11,10 @@
 	<script src="../js/angular.js"></script>
 	<script>
 	var myModule = angular.module('myApp', []);
-	myModule.controller('myController', ['$scope', function () {
+	myModule.controller('myController', ['$scope', function ($scope) {
 		var context = {greeting: 'Hello', name: 'world' };
-        var exp = $interpolate('{{ 2311234.45 | currency : "USD$" }} {{name}}!');
+        var exp = $interpolate('{{  ::abc }} {{ [2, 2] }}!');
         console.log(exp(context));
-		// console.log($interpolate);
 	}]);
 	</script>
 </body>

@@ -10220,9 +10220,9 @@
                         replace(escapedEndRegexp, endSymbol);
                     }
 
-                    function parseStringifyInterceptor(value) {             // 
+                    function parseStringifyInterceptor(value) {             // 解释对象字符串拦截函数
                         try {
-                            return stringify(getValue(value));
+                            return stringify(getValue(value));              // 调用getValue(value)获取value值，尝试调用stringify将value转成对象字符串
                         } catch (err) {
                             var newErr = $interpolateMinErr('interr', "Can't interpolate: {0}\n{1}", text,
                                 err.toString());
@@ -11607,7 +11607,7 @@
     // native objects.
 
 
-    function ensureSafeMemberName(name, fullExpression) {
+    function ensureSafeMemberName(name, fullExpression) {         // 检测属性是不是安全的。不允许"__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__", "__proto__" 
         if (name === "__defineGetter__" || name === "__defineSetter__" || name === "__lookupGetter__" || name === "__lookupSetter__" || name === "__proto__") {
             throw $parseMinErr('isecfld',
                 'Attempting to access a disallowed field in Angular expressions! ' + 'Expression: {0}', fullExpression);
@@ -11615,19 +11615,19 @@
         return name;
     }
 
-    function ensureSafeObject(obj, fullExpression) {
+    function ensureSafeObject(obj, fullExpression) {                              // 检测是否安全的对象。不允许Function, Window, Element, Object对象
         // nifty check if obj is Function that is fast and works across iframes and other contexts
         if (obj) {
-            if (obj.constructor === obj) {
+            if (obj.constructor === obj) {                      // Function
                 throw $parseMinErr('isecfn',
                     'Referencing Function in Angular expressions is disallowed! Expression: {0}',
                     fullExpression);
-            } else if ( // isWindow(obj)
-                obj.window === obj) {
+            } else if ( // isWindow(obj)                        // Window
+                obj.window === obj) {                           
                 throw $parseMinErr('isecwindow',
                     'Referencing the Window in Angular expressions is disallowed! Expression: {0}',
                     fullExpression);
-            } else if ( // isElement(obj)
+            } else if ( // isElement(obj)                       // Element
                 obj.children && (obj.nodeName || (obj.prop && obj.attr && obj.find))) {
                 throw $parseMinErr('isecdom',
                     'Referencing DOM nodes in Angular expressions is disallowed! Expression: {0}',
@@ -11646,7 +11646,7 @@
     var APPLY = Function.prototype.apply;
     var BIND = Function.prototype.bind;
 
-    function ensureSafeFunction(obj, fullExpression) {
+    function ensureSafeFunction(obj, fullExpression) {                  // 检测是否安全的方法。不允许"Function", "call", "apply", "bind"方法
         if (obj) {
             if (obj.constructor === obj) {
                 throw $parseMinErr('isecfn',
@@ -11687,7 +11687,7 @@
 
     //Operators - will be wrapped by binaryFn/unaryFn/assignment/filter
     var OPERATORS = extend(createMap(), {
-        '+': function(self, locals, a, b) {
+        '+': function(self, locals, a, b) {                       // 计算表达式相加的数值
             a = a(self, locals);
             b = b(self, locals);
             if (isDefined(a)) {
@@ -11696,53 +11696,53 @@
                 }
                 return a;
             }
-            return isDefined(b) ? b : undefined;
+            return isDefined(b) ? b : undefined;                  
         },
-        '-': function(self, locals, a, b) {
+        '-': function(self, locals, a, b) {                       // 计数负数的数值
             a = a(self, locals);
             b = b(self, locals);
             return (isDefined(a) ? a : 0) - (isDefined(b) ? b : 0);
         },
-        '*': function(self, locals, a, b) {
+        '*': function(self, locals, a, b) {                       // 相乘
             return a(self, locals) * b(self, locals);
         },
-        '/': function(self, locals, a, b) {
+        '/': function(self, locals, a, b) {                       // 相除
             return a(self, locals) / b(self, locals);
         },
-        '%': function(self, locals, a, b) {
+        '%': function(self, locals, a, b) {                       // 取余
             return a(self, locals) % b(self, locals);
         },
-        '===': function(self, locals, a, b) {
+        '===': function(self, locals, a, b) {                     // 强等
             return a(self, locals) === b(self, locals);
         },
-        '!==': function(self, locals, a, b) {
+        '!==': function(self, locals, a, b) {                     // 强不等
             return a(self, locals) !== b(self, locals);
         },
-        '==': function(self, locals, a, b) {
+        '==': function(self, locals, a, b) {                      // 弱等
             return a(self, locals) == b(self, locals);
         },
-        '!=': function(self, locals, a, b) {
+        '!=': function(self, locals, a, b) {                      // 弱不等
             return a(self, locals) != b(self, locals);
         },
-        '<': function(self, locals, a, b) {
+        '<': function(self, locals, a, b) {                       // 小于
             return a(self, locals) < b(self, locals);
         },
-        '>': function(self, locals, a, b) {
+        '>': function(self, locals, a, b) {                       // 大于
             return a(self, locals) > b(self, locals);
         },
-        '<=': function(self, locals, a, b) {
+        '<=': function(self, locals, a, b) {                      // 小于等于
             return a(self, locals) <= b(self, locals);
         },
-        '>=': function(self, locals, a, b) {
+        '>=': function(self, locals, a, b) {                      // 大于等于
             return a(self, locals) >= b(self, locals);
         },
-        '&&': function(self, locals, a, b) {
+        '&&': function(self, locals, a, b) {                      // 逻辑与
             return a(self, locals) && b(self, locals);
         },
-        '||': function(self, locals, a, b) {
+        '||': function(self, locals, a, b) {                      // 逻辑或
             return a(self, locals) || b(self, locals);
         },
-        '!': function(self, locals, a) {
+        '!': function(self, locals, a) {                          // 布尔取反
             return !a(self, locals);
         },
 
@@ -12014,14 +12014,14 @@
     };
 
 
-    function isConstant(exp) {
+    function isConstant(exp) {                                        // 返回exp对象的constant属性
         return exp.constant;
     }
 
     /**
      * @constructor
      */
-    var Parser = function(lexer, $filter, options) {
+    var Parser = function(lexer, $filter, options) {                  // 解释类
         this.lexer = lexer;
         this.$filter = $filter;
         this.options = options;
@@ -12037,7 +12037,7 @@
     Parser.prototype = {
         constructor: Parser,
 
-        parse: function(text) {                             // 解释文本表达式
+        parse: function(text) {                             // 解释文本表达式，返回一个解释状态函数
             this.text = text;                               // 保存text
             this.tokens = this.lexer.lex(text);             // 解释text表达式，将结果保存到this.tokens中。
 
@@ -12050,13 +12050,13 @@
             value.literal = !! value.literal;              // 赋值literal, constant属性
             value.constant = !! value.constant;
 
-            return value;
+            return value;                                  // 返回
         },
 
-        primary: function() {                               // 
+        primary: function() {                               // 返回一个函数，执行该函数会返回解释的表达式
             var primary;
             if (this.expect('(')) {                         // 如果是'('开头，调用filterChain再次过滤，因为参数中可能存在表达式
-                primary = this.filterChain();               // 
+                primary = this.filterChain();               
                 this.consume(')');
             } else if (this.expect('[')) {                  // 如果是'['开头，说明是数组，去掉第一个表达式信息对象'['
                 primary = this.arrayDeclaration();          // 调用.arrayDeclaration()转成数组
@@ -12075,16 +12075,16 @@
             }
 
             var next, context;
-            while ((next = this.expect('(', '[', '.'))) {   // 
-                if (next.text === '(') {
-                    primary = this.functionCall(primary, context);
+            while ((next = this.expect('(', '[', '.'))) {   // 如果当前表达式为为'(', '[', '.'
+                if (next.text === '(') {                    // 如果为'(', 说明执行方法
+                    primary = this.functionCall(primary, context);    // 调用this.functionCall, 返回函数执行值
                     context = null;
-                } else if (next.text === '[') {
+                } else if (next.text === '[') {             // 如果为'[' ，说明是对象中的数组
                     context = primary;
-                    primary = this.objectIndex(primary);
-                } else if (next.text === '.') {
+                    primary = this.objectIndex(primary);    // 调用.objectIndex()方法，获取一个解释对象位置的函数$parseObjectIndex
+                } else if (next.text === '.') {             // 如果有'.'
                     context = primary;
-                    primary = this.fieldAccess(primary);
+                    primary = this.fieldAccess(primary);    // 调用.fieldAccess()方法, 返回一个解释字段访问函数$parseFieldAccess
                 } else {
                     this.throwError('IMPOSSIBLE');
                 }
@@ -12140,19 +12140,19 @@
             });
         },
 
-        binaryFn: function(left, fn, right, isBranching) {                  // 
-            return extend(function $parseBinaryFn(self, locals) {
-                return fn(self, locals, left, right);
+        binaryFn: function(left, fn, right, isBranching) {                  // 返回解释二进制函数$parseBinaryFn。left为左边表达式解释函数，right为右边表达式解释函数, fn匹配的运算符方法。isBranching是不是分支
+            return extend(function $parseBinaryFn(self, locals) {           // 返回解释二进制函数$parseBinaryFn
+                return fn(self, locals, left, right);                       // 返回fn执行值
             }, {
-                constant: left.constant && right.constant,
-                inputs: !isBranching && [left, right]
+                constant: left.constant && right.constant,                  // 是否连续的
+                inputs: !isBranching && [left, right]                       // 如果不是分支就赋值给inputs，值为[left, right]
             });
         },
 
         statements: function() {                                // 获取解释状态函数，执行该函数会返回表达式解释后的字符
             var statements = [];
             while (true) {                                      
-                if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))   // 如果表达式不是以'}', ')', ';', ']'开头的
+                if (this.tokens.length > 0 && !this.peek('}', ')', ';', ']'))   // 如果当前表达式字符串不是以'}', ')', ';', ']'，
                     statements.push(this.filterChain());                        // 调用filterChain()，把结果插入到statements数组中。
                 if (!this.expect(';')) {                                        // 如果没有分号
                     // optimize for the common case where there is only one statement.  
@@ -12168,16 +12168,16 @@
             }
         },
 
-        filterChain: function() {                               // 
+        filterChain: function() {                               // 返回解释表达式函数
             var left = this.expression();                       // 调用this.expression()，获取解释表达式函数
             var token;
-            while ((token = this.expect('|'))) {
-                left = this.filter(left);
+            while ((token = this.expect('|'))) {                // 如果有过滤条件
+                left = this.filter(left);                       // 获取解释过滤函数$parseFilter。调用.filter(inputFn)，重置left
             }
-            return left;
+            return left;                                        // 返回解释表达式函数
         },
 
-        filter: function(inputFn) {                             // 过滤函数filter，inputFn为过滤的解释表达式函数
+        filter: function(inputFn) {                             // 返回解释过滤函数$parseFilter。过滤函数filter，inputFn为过滤的解释表达式函数
             var token = this.expect();                          // 过滤条件
             var fn = this.$filter(token.text);                  // 获取过滤函数
             var argsFn;
@@ -12208,26 +12208,26 @@
 
                 return fn(input);
             }, {
-                constant: !fn.$stateful && inputs.every(isConstant),
+                constant: !fn.$stateful && inputs.every(isConstant),      // 
                 inputs: !fn.$stateful && inputs
             });
         },
 
-        expression: function() {                          // 调用.assignment()方法，返回
+        expression: function() {                          // 调用.assignment()方法，返回解释表达式函数
             return this.assignment();
         },
 
-        assignment: function() {
-            var left = this.ternary();
+        assignment: function() {                          // 返回解释赋值函数，执行该函数会执行left.assign, 把'='右边的值赋值给左边。如果没有'='，则返回解释表达式left
+            var left = this.ternary(); 
             var right;
             var token;
-            if ((token = this.expect('='))) {
-                if (!left.assign) {
+            if ((token = this.expect('='))) {             // 如果有'='，说明表达式要赋值
+                if (!left.assign) {                       // assign用于赋值，如果没有就抛出异常
                     this.throwError('implies assignment but [' +
                         this.text.substring(0, token.index) + '] can not be assigned to', token);
                 }
-                right = this.ternary();
-                return extend(function $parseAssignment(scope, locals) {
+                right = this.ternary();                   // 调用this.ternary()获取解释'='右边表达式的函数
+                return extend(function $parseAssignment(scope, locals) {      // 返回解释函数$parseAssignment
                     return left.assign(scope, right(scope, locals), locals);
                 }, {
                     inputs: [left, right]
@@ -12236,22 +12236,22 @@
             return left;
         },
 
-        ternary: function() {
-            var left = this.logicalOR();
+        ternary: function() {                             // 返回三目解释函数$parseTernary, 如果没有'?', ':'，则返回解释表达式left
+            var left = this.logicalOR();                  
             var middle;
             var token;
-            if ((token = this.expect('?'))) {
-                middle = this.assignment();
-                if ((token = this.expect(':'))) {
-                    var right = this.assignment();
+            if ((token = this.expect('?'))) {             // 如果是三目表达式
+                middle = this.assignment();               // 获取中间的解释函数
+                if ((token = this.expect(':'))) {         // 
+                    var right = this.assignment();        // 获取右边的解释函数
 
-                    return extend(function $parseTernary(self, locals) {
-                        return left(self, locals) ? middle(self, locals) : right(self, locals);
+                    return extend(function $parseTernary(self, locals) {        // 返回解释函数$parseTernary
+                        return left(self, locals) ? middle(self, locals) : right(self, locals);       // 执行三目表达式
                     }, {
-                        constant: left.constant && middle.constant && right.constant
+                        constant: left.constant && middle.constant && right.constant    // 是否连续的
                     });
 
-                } else {
+                } else {  
                     this.throwError('expected :', token);
                 }
             }
@@ -12259,146 +12259,146 @@
             return left;
         },
 
-        logicalOR: function() {
+        logicalOR: function() {                           // 返回解释逻辑或函数$parseBinaryFn, 如果没有'||'，则返回解释表达式left
             var left = this.logicalAND();
             var token;
-            while ((token = this.expect('||'))) {
+            while ((token = this.expect('||'))) {         // 如果遇到逻辑'||'，调用this.binaryFn，获取解释二进制函数left。其中token.fn匹配'||'的执行方法，this.logicalAND的'||'右边的解释函数
+                left = this.binaryFn(left, token.fn, this.logicalAND(), true);      
+            }
+            return left;
+        },
+
+        logicalAND: function() {                          // 返回解释逻辑与函数$parseBinaryFn, 如果没有'&&'，则返回解释表达式left
+            var left = this.equality();       
+            var token;
+            if ((token = this.expect('&&'))) {            // 如果遇到逻辑'&&'，调用this.binaryFn，获取解释二进制函数left。其中token.fn匹配'&&'的执行方法，this.logicalAND的'&&'右边的解释函数
                 left = this.binaryFn(left, token.fn, this.logicalAND(), true);
             }
             return left;
         },
 
-        logicalAND: function() {
-            var left = this.equality();
+        equality: function() {                            // 返回解释等式函数$parseBinaryFn, 如果没有'==', '!=', '===', '!=='，则返回解释表达式left
+            var left = this.relational();                 // 左边表达式解释函数
             var token;
-            if ((token = this.expect('&&'))) {
-                left = this.binaryFn(left, token.fn, this.logicalAND(), true);
+            if ((token = this.expect('==', '!=', '===', '!=='))) {        // 如果遇到'==', '!=', '===', '!== '
+                left = this.binaryFn(left, token.fn, this.equality());    // 调用this.binaryFn，获取解释二进制函数left。其中token.fn匹配'==', '!=', '===', '!== '的执行方法，this.logicalAND的'==', '!=', '===', '!== '右边的解释函数
             }
             return left;
         },
 
-        equality: function() {
-            var left = this.relational();
-            var token;
-            if ((token = this.expect('==', '!=', '===', '!=='))) {
-                left = this.binaryFn(left, token.fn, this.equality());
+        relational: function() {                          // 返回解释小于大于函数$parseBinaryFn, 如果没有'<', '>', '<=', '>='，则返回解释表达式left
+            var left = this.additive();                   // 左边表达式解释函数
+            var token;                
+            if ((token = this.expect('<', '>', '<=', '>='))) {            // 如果遇到'<', '>', '<=', '>='
+                left = this.binaryFn(left, token.fn, this.relational());  // 调用this.binaryFn，获取解释二进制函数left。其中token.fn匹配'<', '>', '<=', '>='的执行方法，this.logicalAND的'<', '>', '<=', '>='右边的解释函数
             }
             return left;
         },
 
-        relational: function() {
-            var left = this.additive();
-            var token;
-            if ((token = this.expect('<', '>', '<=', '>='))) {
-                left = this.binaryFn(left, token.fn, this.relational());
+        additive: function() {                            // 返回解释加减函数$parseBinaryFn, 如果没有'+', '-'，则返回解释表达式left
+            var left = this.multiplicative();             // 左边表达式解释函数
+            var token;  
+            while ((token = this.expect('+', '-'))) {                           // 如果遇到'+', '-'
+                left = this.binaryFn(left, token.fn, this.multiplicative());    // 调用this.binaryFn，获取解释二进制函数left。其中token.fn匹配'+', '-'的执行方法，this.logicalAND的'+', '-'右边的解释函数
             }
             return left;
         },
 
-        additive: function() {
-            var left = this.multiplicative();
+        multiplicative: function() {                      // 返回解释'*', '/', '%'函数$parseBinaryFn, 如果没有'*', '/', '%'，则返回解释表达式left
+            var left = this.unary();                      // 左边表达式解释函数
             var token;
-            while ((token = this.expect('+', '-'))) {
-                left = this.binaryFn(left, token.fn, this.multiplicative());
+            while ((token = this.expect('*', '/', '%'))) {                      // 如果遇到'*', '/', '%'
+                left = this.binaryFn(left, token.fn, this.unary());             // 调用this.binaryFn，获取解释二进制函数left。其中token.fn匹配*', '/', '%'的执行方法，this.logicalAND的*', '/', '%'右边的解释函数
             }
             return left;
         },
 
-        multiplicative: function() {
-            var left = this.unary();
+        unary: function() {                               // 返回解释'+', '-', '！'一元运算符函数$parseBinaryFn，如果没有'+', '-', '！'，则调用this.primary(), 返回解释表达式函数
             var token;
-            while ((token = this.expect('*', '/', '%'))) {
-                left = this.binaryFn(left, token.fn, this.unary());
-            }
-            return left;
-        },
-
-        unary: function() {
-            var token;
-            if (this.expect('+')) {       // 如果第一个字符为'+'
-                return this.primary();    // 
-            } else if ((token = this.expect('-'))) {
-                return this.binaryFn(Parser.ZERO, token.fn, this.unary());
-            } else if ((token = this.expect('!'))) {
+            if (this.expect('+')) {       // 如果当前字符为'+'
+                return this.primary();    // 调用this.primary()方法
+            } else if ((token = this.expect('-'))) {                          // 如果当前字符是负数
+                return this.binaryFn(Parser.ZERO, token.fn, this.unary());    // 调用this.binaryFn, 计算负数。左边为Parser.ZERO, 右边是解释数字函数，token.fn对应OPERATORS['-']方法
+            } else if ((token = this.expect('!'))) {                          // 布尔取反
                 return this.unaryFn(token.fn, this.unary());
             } else {
-                return this.primary();
+                return this.primary();                                      
             }
         },
 
-        fieldAccess: function(object) {
-            var expression = this.text;
-            var field = this.expect().text;
-            var getter = getterFn(field, this.options, expression);
+        fieldAccess: function(object) {                                 // 返回一个解释字段访问函数$parseFieldAccess
+            var expression = this.text;                                 // 完整表达式，比如greet.remove();
+            var field = this.expect().text;                             // 获取方法名
+            var getter = getterFn(field, this.options, expression);     // 获取执行方法getter
 
-            return extend(function $parseFieldAccess(scope, locals, self) {
-                return getter(self || object(scope, locals));
+            return extend(function $parseFieldAccess(scope, locals, self) {       // 返回一个解释字段访问函数$parseFieldAccess
+                return getter(self || object(scope, locals));           // 返回执行方法的值
             }, {
-                assign: function(scope, value, locals) {
-                    var o = object(scope, locals);
-                    if (!o) object.assign(scope, o = {});
-                    return setter(o, field, value, expression);
+                assign: function(scope, value, locals) {                // 添加属性assign函数
+                    var o = object(scope, locals);                      // 调用object方法
+                    if (!o) object.assign(scope, o = {});               // 如果获取不到返回值
+                    return setter(o, field, value, expression);         // 调用setter，将value赋值给o，属性名为field路径最后的方法
                 }
             });
         },
 
-        objectIndex: function(obj) {
-            var expression = this.text;
+        objectIndex: function(obj) {                                              // 返回一个解释对象位置的函数$parseObjectIndex 
+            var expression = this.text;                                           // 获取表达式expression
 
-            var indexFn = this.expression();
-            this.consume(']');
+            var indexFn = this.expression();                                      // 获取解释表达式函数
+            this.consume(']');  
 
-            return extend(function $parseObjectIndex(self, locals) {
+            return extend(function $parseObjectIndex(self, locals) {              // 返回一个解释对象位置的函数$parseObjectIndex, 
                 var o = obj(self, locals),
                     i = indexFn(self, locals),
                     v;
 
-                ensureSafeMemberName(i, expression);
+                ensureSafeMemberName(i, expression);                              // 检测属性的安全
                 if (!o) return undefined;
-                v = ensureSafeObject(o[i], expression);
+                v = ensureSafeObject(o[i], expression);                           // 检测对象的安全
                 return v;
             }, {
-                assign: function(self, value, locals) {
-                    var key = ensureSafeMemberName(indexFn(self, locals), expression);
+                assign: function(self, value, locals) {                           // 加上属性assign，指向一个函数
+                    var key = ensureSafeMemberName(indexFn(self, locals), expression);    // 检测属性的安全
                     // prevent overwriting of Function.constructor which would break ensureSafeObject check
-                    var o = ensureSafeObject(obj(self, locals), expression);
-                    if (!o) obj.assign(self, o = {});
-                    return o[key] = value;
+                    var o = ensureSafeObject(obj(self, locals), expression);      // 检测对象的安全
+                    if (!o) obj.assign(self, o = {});                             // 调用
+                    return o[key] = value;                                        // 返回value值，设置o的key属性为value
                 }
             });
         },
 
-        functionCall: function(fnGetter, contextGetter) {
+        functionCall: function(fnGetter, contextGetter) {                         // 返回解释原义函数$parseFunctionCall
             var argsFn = [];
-            if (this.peekToken().text !== ')') {
+            if (this.peekToken().text !== ')') {                                  // 解释'(', ')'内的参数
                 do {
-                    argsFn.push(this.expression());
+                    argsFn.push(this.expression());                               // 将解释表达式函数插入到argsFn中
                 } while (this.expect(','));
             }
             this.consume(')');
 
-            var expressionText = this.text;
+            var expressionText = this.text;                               
             // we can safely reuse the array across invocations
             var args = argsFn.length ? [] : null;
 
-            return function $parseFunctionCall(scope, locals) {
-                var context = contextGetter ? contextGetter(scope, locals) : scope;
-                var fn = fnGetter(scope, locals, context) || noop;
-
+            return function $parseFunctionCall(scope, locals) {                  // 返回解释原义函数$parseFunctionCall
+                var context = contextGetter ? contextGetter(scope, locals) : scope;     // 获取上下文对象。contextGetter存在，调用contextGetter，否则为scope
+                var fn = fnGetter(scope, locals, context) || noop;               // 获取执行方法
+ 
                 if (args) {
-                    var i = argsFn.length;
-                    while (i--) {
-                        args[i] = ensureSafeObject(argsFn[i](scope, locals), expressionText);
+                    var i = argsFn.length;                                       // 如果argsFn存在，说明有参数，需要解释参数
+                    while (i--) {                                                // 遍历argsFn, 调用ensureSafeObject()。
+                        args[i] = ensureSafeObject(argsFn[i](scope, locals), expressionText);     // 检测是否安全对象
                     }
                 }
 
-                ensureSafeObject(context, expressionText);
+                ensureSafeObject(context, expressionText);                       // 检测context, fn是不是安全的
                 ensureSafeFunction(fn, expressionText);
 
                 // IE stupidity! (IE doesn't have apply for some native functions)
-                var v = fn.apply ? fn.apply(context, args) : fn(args[0], args[1], args[2], args[3], args[4]);
+                var v = fn.apply ? fn.apply(context, args) : fn(args[0], args[1], args[2], args[3], args[4]);     // IE下不支持apply
 
-                return ensureSafeObject(v, expressionText);
+                return ensureSafeObject(v, expressionText);                     // 执行fn返回的结果
             };
         },
 
@@ -12467,24 +12467,24 @@
     // Parser helper functions
     //////////////////////////////////////////////////
 
-    function setter(obj, path, setValue, fullExp) {
-        ensureSafeObject(obj, fullExp);
+    function setter(obj, path, setValue, fullExp) {                       // 设置方法setter，找到路径最后的方法，并设置为setValue。
+        ensureSafeObject(obj, fullExp);                                   
 
-        var element = path.split('.'),
+        var element = path.split('.'),                                    // 分割路径path
             key;
-        for (var i = 0; element.length > 1; i++) {
+        for (var i = 0; element.length > 1; i++) {                        // 找到最后一个阶级对象(执行函数)
             key = ensureSafeMemberName(element.shift(), fullExp);
-            var propertyObj = ensureSafeObject(obj[key], fullExp);
+            var propertyObj = ensureSafeObject(obj[key], fullExp);        
             if (!propertyObj) {
                 propertyObj = {};
                 obj[key] = propertyObj;
             }
             obj = propertyObj;
         }
-        key = ensureSafeMemberName(element.shift(), fullExp);
+        key = ensureSafeMemberName(element.shift(), fullExp);             // 
         ensureSafeObject(obj[key], fullExp);
-        obj[key] = setValue;
-        return setValue;
+        obj[key] = setValue;                                              // 设置key为setValue
+        return setValue;                                                  // 返回setValue
     }
 
     var getterFnCache = createMap();
@@ -12495,18 +12495,18 @@
      * - http://jsperf.com/path-evaluation-simplified/7
      */
 
-    function cspSafeGetterFn(key0, key1, key2, key3, key4, fullExp) {
+    function cspSafeGetterFn(key0, key1, key2, key3, key4, fullExp) {           // 检测参数是不是安全的对象
         ensureSafeMemberName(key0, fullExp);
         ensureSafeMemberName(key1, fullExp);
         ensureSafeMemberName(key2, fullExp);
         ensureSafeMemberName(key3, fullExp);
         ensureSafeMemberName(key4, fullExp);
 
-        return function cspSafeGetter(scope, locals) {
-            var pathVal = (locals && locals.hasOwnProperty(key0)) ? locals : scope;
+        return function cspSafeGetter(scope, locals) {                          // 返回函数cspSafeGetter
+            var pathVal = (locals && locals.hasOwnProperty(key0)) ? locals : scope;     // 如果locals存在，并且有key0属性，把locals赋值给pathVal, 否则把scope赋值给pathVal
 
-            if (pathVal == null) return pathVal;
-            pathVal = pathVal[key0];
+            if (pathVal == null) return pathVal;        // 如果pathVal为null，说明locals, scope没有传，返回pathVal。
+            pathVal = pathVal[key0];                    // 获取key0属性对象
 
             if (!key1) return pathVal;
             if (pathVal == null) return undefined;
@@ -12524,24 +12524,24 @@
             if (pathVal == null) return undefined;
             pathVal = pathVal[key4];
 
-            return pathVal;
+            return pathVal;                             // 返回最后的函数
         };
     }
 
-    function getterFn(path, options, fullExp) {               // 获取方法，其中path为路径，options为选项，fullExp为全表达式
-        var fn = getterFnCache[path];
+    function getterFn(path, options, fullExp) {               // 获取执行方法，其中path为路径，options为选项，fullExp为全表达式
+        var fn = getterFnCache[path];                         // 从缓存中获取路径为path的方法
 
         if (fn) return fn;
 
-        var pathKeys = path.split('.'),
-            pathKeysLength = pathKeys.length;
+        var pathKeys = path.split('.'),                       // 用'.'分割
+            pathKeysLength = pathKeys.length;                 // 获取调用阶级数
 
         // http://jsperf.com/angularjs-parse-getter/6
-        if (options.csp) {
-            if (pathKeysLength < 6) {
-                fn = cspSafeGetterFn(pathKeys[0], pathKeys[1], pathKeys[2], pathKeys[3], pathKeys[4], fullExp);
-            } else {
-                fn = function cspSafeGetter(scope, locals) {
+        if (options.csp) {                                    // 如果选项csp为true，要检测每个阶级对象是否安全的
+            if (pathKeysLength < 6) {                         // 调用阶级数小于6
+                fn = cspSafeGetterFn(pathKeys[0], pathKeys[1], pathKeys[2], pathKeys[3], pathKeys[4], fullExp);     // 调用cspSafeGetterFn()检测阶级对象是不是安全的，返回函数cspSafeGetter
+            } else {                                          // 否则大于6个阶级，fn手动设置为cspSafeGetter
+                fn = function cspSafeGetter(scope, locals) {  
                     var i = 0,
                         val;
                     do {
@@ -12554,33 +12554,33 @@
                     return val;
                 };
             }
-        } else {
-            var code = '';
+        } else {                                              
+            var code = '';                                    // 创建函数体字符串
             forEach(pathKeys, function(key, index) {
-                ensureSafeMemberName(key, fullExp);
-                code += 'if(s == null) return undefined;\n' +
+                ensureSafeMemberName(key, fullExp);           // 检测安全的对象
+                code += 'if(s == null) return undefined;\n' +     
                     's=' + (index
                         // we simply dereference 's' on any .dot notation
                         ? 's'
                         // but if we are first then we check locals first, and if so read it first
                         : '((l&&l.hasOwnProperty("' + key + '"))?l:s)') + '.' + key + ';\n';
             });
-            code += 'return s;';
+            code += 'return s;';                              // 合并到code上
 
-            /* jshint -W054 */
-            var evaledFnGetter = new Function('s', 'l', code); // s=scope, l=locals
+            /* jshint -W054 */ 
+            var evaledFnGetter = new Function('s', 'l', code); // s=scope, l=locals     // 创建执行函数
             /* jshint +W054 */
-            evaledFnGetter.toString = valueFn(code);
+            evaledFnGetter.toString = valueFn(code);          // 调用valueFn，返回一个函数，执行该函数返回函数体字符串。并赋值给执行函数evaledFnGetter.toString属性
 
-            fn = evaledFnGetter;
+            fn = evaledFnGetter;                              // 将evaledFnGetter赋值给fn
         }
 
-        fn.sharedGetter = true;
-        fn.assign = function(self, value) {
-            return setter(self, path, value, path);
-        };
-        getterFnCache[path] = fn;
-        return fn;
+        fn.sharedGetter = true;                               // sharedGetter设置为true
+        fn.assign = function(self, value) {                   // 设置assign为一个函数，执行该函数会调用setter方法
+            return setter(self, path, value, path);           // 调用setter方法，找到路径最后的方法，并设置为setValue。
+        }; 
+        getterFnCache[path] = fn;                             // 缓存fn
+        return fn;                                              
     }
 
     ///////////////////////////////////
@@ -12647,22 +12647,22 @@
             function($filter, $sniffer) {
                 $parseOptions.csp = $sniffer.csp;
 
-                function wrapSharedExpression(exp) {
+                function wrapSharedExpression(exp) {                          // 包裹分享的表达式, 在exp外包一个函数$parseWrapper
                     var wrapped = exp;
 
-                    if (exp.sharedGetter) {
-                        wrapped = function $parseWrapper(self, locals) {
+                    if (exp.sharedGetter) {                                   // 如果.sharedGetter为true
+                        wrapped = function $parseWrapper(self, locals) {      // 将$parseWraper赋值给wrapped，执行该函数会返回scope下的表达式
                             return exp(self, locals);
                         };
-                        wrapped.literal = exp.literal;
+                        wrapped.literal = exp.literal;                        // 设置literal, constant, assign属性，从exp函数中复制
                         wrapped.constant = exp.constant;
                         wrapped.assign = exp.assign;
                     }
 
-                    return wrapped;
+                    return wrapped;                                           // 返回wrapped
                 }
 
-                return function $parse(exp, interceptorFn) {                  // 解释
+                return function $parse(exp, interceptorFn) {                  // 解释表达式exp
                     var parsedExpression, oneTime, cacheKey;
 
                     switch (typeof exp) {
@@ -12678,24 +12678,24 @@
                                 }
 
                                 var lexer = new Lexer($parseOptions);         // 创建一个Lexer对象，自定义属性options为$parseOptions
-                                var parser = new Parser(lexer, $filter, $parseOptions);       // 
-                                parsedExpression = parser.parse(exp);
+                                var parser = new Parser(lexer, $filter, $parseOptions);       // 创建解释类
+                                parsedExpression = parser.parse(exp);         // 调用.parse(exp)，获取解释exp表达式函数
 
-                                if (parsedExpression.constant) {
-                                    parsedExpression.$$watchDelegate = constantWatchDelegate;
-                                } else if (oneTime) {
+                                if (parsedExpression.constant) {              // 如果constant为true，数字，对象，数组为true
+                                    parsedExpression.$$watchDelegate = constantWatchDelegate;   // 将constantWatchDelegate 赋值给$$watchDelegate属性
+                                } else if (oneTime) {                         // 如果oneTime为true, 表示是一次性的
                                     //oneTime is not part of the exp passed to the Parser so we may have to
                                     //wrap the parsedExpression before adding a $$watchDelegate
-                                    parsedExpression = wrapSharedExpression(parsedExpression);
-                                    parsedExpression.$$watchDelegate = parsedExpression.literal ?
-                                        oneTimeLiteralWatchDelegate : oneTimeWatchDelegate;
-                                } else if (parsedExpression.inputs) {
-                                    parsedExpression.$$watchDelegate = inputsWatchDelegate;
+                                    parsedExpression = wrapSharedExpression(parsedExpression);    // 用一个函数$parseWrapper包住parsedExpression函数，执行$parseWrapper时，会返回执行parsedExpression的返回值
+                                    parsedExpression.$$watchDelegate = parsedExpression.literal ?   // 如果literal为true, $$watchDelagate为oneTimeLiteralWatchDelegate, 否则为oneTimeWatchDelegate
+                                        oneTimeLiteralWatchDelegate : oneTimeWatchDelegate;       // 
+                                } else if (parsedExpression.inputs) {                             // 如果有inputs，说明是判断表达式。例如 1 == '1'
+                                    parsedExpression.$$watchDelegate = inputsWatchDelegate;       // $$watchDelegate为inputsWatchDelegate
                                 }
 
-                                cache[cacheKey] = parsedExpression;
+                                cache[cacheKey] = parsedExpression;           // 缓存parsedExpression, 属性名为表达式值
                             }
-                            return addInterceptor(parsedExpression, interceptorFn);
+                            return addInterceptor(parsedExpression, interceptorFn);   // 调用addInterceptor()
 
                         case 'function':
                             return addInterceptor(exp, interceptorFn);
@@ -12831,10 +12831,10 @@
                     }
                 }
 
-                function constantWatchDelegate(scope, listener, objectEquality, parsedExpression) {
+                function constantWatchDelegate(scope, listener, objectEquality, parsedExpression) {         // 不断监听代理
                     var unwatch;
-                    return unwatch = scope.$watch(function constantWatch(scope) {
-                        return parsedExpression(scope);
+                    return unwatch = scope.$watch(function constantWatch(scope) {                           // 调用scope.$wacth方法
+                        return parsedExpression(scope);                                                     // 调用parsedExpression(scope)方法
                     }, function constantListener(value, old, scope) {
                         if (isFunction(listener)) {
                             listener.apply(this, arguments);
@@ -12843,7 +12843,7 @@
                     }, objectEquality);
                 }
 
-                function addInterceptor(parsedExpression, interceptorFn) {
+                function addInterceptor(parsedExpression, interceptorFn) {                                  // 
                     if (!interceptorFn) return parsedExpression;
 
                     var fn = function interceptedExpression(scope, locals) {
@@ -16953,7 +16953,7 @@
 
     var DECIMAL_SEP = '.';
 
-    function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {              // 格式化数字。groupSep分组，decimal小数，fractionSize精确位数
+    function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {              // 格式化数字，如果传入pattern，则在数字前加上pattern, 否则加上$。groupSep分组，decimal小数，fractionSize精确位数
         if (!isFinite(number) || isObject(number)) return '';
 
         var isNegative = number < 0;                // 判断是不是负数
@@ -17024,15 +17024,15 @@
             if (fractionSize && fractionSize !== "0") formatedText += decimalSep + fraction.substr(0, fractionSize);      // 拼接字符串，截取小数位数
         } else {
 
-            if (fractionSize > 0 && number > -1 && number < 1) {                  // 
-                formatedText = number.toFixed(fractionSize);
+            if (fractionSize > 0 && number > -1 && number < 1) {                  // 如果是小数大于-1，小于1，比如0.10
+                formatedText = number.toFixed(fractionSize);                      // 转成fractionSize小数
             }
         }
 
-        parts.push(isNegative ? pattern.negPre : pattern.posPre);
-        parts.push(formatedText);
-        parts.push(isNegative ? pattern.negSuf : pattern.posSuf);
-        return parts.join('');
+        parts.push(isNegative ? pattern.negPre : pattern.posPre);                 // 如果是负数，插入'(¤'到parts，否则插入'¤'。
+        parts.push(formatedText);                                                 // 插入格式化的字符串formatedText
+        parts.push(isNegative ? pattern.negSuf : pattern.posSuf);                 // 如果是负数，插入'('到parts，否则插入''。
+        return parts.join('');                                                    // 返回字符串，用','隔开
     }
 
     function padNumber(num, digits, trim) {
