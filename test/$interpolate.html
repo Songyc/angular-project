@@ -11,9 +11,9 @@
 	<script src="../js/angular.js"></script>
 	<script>
 	var myModule = angular.module('myApp', []);
-	myModule.controller('myController', ['$scope', function ($scope) {
-		var context = {greeting: 'Hello', name: 'world' };
-        var exp = $interpolate('{{  ::abc }} {{ [2, 2] }}!');
+	myModule.controller('myController', ['$scope', '$interpolate', function ($scope, $interpolate) {
+		var context = {greeting: 'Hello', name: 'world', abc: {abc: 'abcd'} };
+        var exp = $interpolate(' {{abc}} {{[2,2]}}');
         console.log(exp(context));
 	}]);
 	</script>

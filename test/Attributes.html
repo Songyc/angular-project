@@ -6,8 +6,8 @@
 </head>
 <body ng-app="myApp">
 	<div class="test" ng-controller="myController">
-		<input type="text" class="input" ng-if-start="">
-		<img src="" class="img">
+		<input type="text" class="input">
+		<img src="" class="img" ng-if="">
 		test
 	</div>
 	<script src="../js/angular.js"></script>
@@ -16,9 +16,9 @@
 	myModule.controller('myController', ['$scope', '$compile', function ($scope, $compile) {
 		console.log({obj: providerCache});
 		var attribute = new Attributes(angular.element(document.querySelector('.img')));
-		attribute.$observe('key', function key() {
-			console.log('key');
-		});
+		// attribute.$observe('key', function key() {
+		// 	console.log('key');
+		// });
 	}]);
 
 	</script>

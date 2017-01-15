@@ -6849,7 +6849,7 @@
                             var lastTuple = trim(rawUris[i * 2]).split(/\s/);           // 把最后一项为URI和描述符
 
                             // sanitize the last uri
-                            result += $$sanitizeUri(trim(lastTuple[0]), true);          // 
+                            result += $$sanitizeUri(trim(lastTuple[0]), true);           
 
                             // and add the last descriptor if any
                             if (lastTuple.length === 2) {                               // 添加最后一个描述符
@@ -6976,7 +6976,7 @@
                             $compileNodes[index] = jqLite(node).wrap('<span></span>').parent()[0];
                         }
                     });
-                    var compositeLinkFn =                                // 
+                    var compositeLinkFn =                                // 返回一个函数，执行该函数编译节点元素。
                         compileNodes($compileNodes, transcludeFn, $compileNodes,
                             maxPriority, ignoreDirective, previousCompileContext);
                     compile.$$addScopeClass($compileNodes);
@@ -7209,7 +7209,7 @@
                                         attrs[nName] = true; // presence means true
                                     }
                                 }
-                                addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);        // 
+                                addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);        // 添加特性拦截指令addAttrInterpolateDirective。
                                 addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,
                                     attrEndName);
                             }
@@ -8120,13 +8120,13 @@
 
 
                 function addAttrInterpolateDirective(node, directives, value, name, allOrNothing) {           // 
-                    var interpolateFn = $interpolate(value, true);            // 
+                    var interpolateFn = $interpolate(value, true);            // 返回interplationFn，执行该函数会执行每个解释函数，解释成整个表达式字符串。如果没有表达式，返回undefined
 
                     // no interpolation found -> ignore
-                    if (!interpolateFn) return;
+                    if (!interpolateFn) return;                               // 
 
 
-                    if (name === "multiple" && nodeName_(node) === "select") {
+                    if (name === "multiple" && nodeName_(node) === "select") {  
                         throw $compileMinErr("selmulti",
                             "Binding to the 'multiple' attribute is not supported. Element: {0}",
                             startingTag(node));
@@ -9969,7 +9969,7 @@
          * @param {string=} value new value to set the starting symbol to.
          * @returns {string|self} Returns the symbol when used as getter and self if used as setter.
          */
-        this.startSymbol = function(value) {
+        this.startSymbol = function(value) {                        // 将'{'开始字符改成自定义value
             if (value) {
                 startSymbol = value;
                 return this;
@@ -9987,7 +9987,7 @@
          * @param {string=} value new value to set the ending symbol to.
          * @returns {string|self} Returns the symbol when used as getter and self if used as setter.
          */
-        this.endSymbol = function(value) {
+        this.endSymbol = function(value) {                         // 将'}'结束字符改成自定义value
             if (value) {
                 endSymbol = value;
                 return this;
@@ -10103,7 +10103,7 @@
                  * - `context`: evaluation context for all expressions embedded in the interpolated text
                  */
 
-                function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {                 //                    // 插入
+                function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {                 // 返回interpolationFn方法。遍历表达式文本，解释每个表达式的值，把每个解释函数存储。返回interplationFn，执行该函数会执行每个解释函数，解释成整个表达式字符串
                     allOrNothing = !! allOrNothing;                         // 
                     var startIndex,
                         endIndex,
@@ -10115,22 +10115,23 @@
                         concat = [],
                         expressionPositions = [];
 
-                    while (index < textLength) {                            // 
+                    while (index < textLength) {                            // 遍历表达式文本
                         if (((startIndex = text.indexOf(startSymbol, index)) != -1) &&    // 如果有'{{'和'}}'
                             ((endIndex = text.indexOf(endSymbol, startIndex + startSymbolLength)) != -1)) {
                             if (index !== startIndex) {                     // 如果'{{'不是开始位置，可能有空格或其它字符
-                                concat.push(unescapeText(text.substring(index, startIndex)));   // 把'\{', '\}'转成'{', '}'
+                                concat.push(unescapeText(text.substring(index, startIndex)));   // 把'\{', '\}'转成'{', '}', 并截取'{'前面的字符插入到concat中
                             }
                             exp = text.substring(startIndex + startSymbolLength, endIndex);     // 获取第一个'{{', '}}'中的字符
                             expressions.push(exp);                                              // 插入到expressions数组中
-                            parseFns.push($parse(exp, parseStringifyInterceptor));        // 
-                            index = endIndex + endSymbolLength;
-                            expressionPositions.push(concat.length);
-                            concat.push('');
+                            parseFns.push($parse(exp, parseStringifyInterceptor));        // 调用$parse方法，返回一个拦截器函数interceptedExpression，执行该函数会获取表达式的值，并转成字符串
+                            index = endIndex + endSymbolLength;             // 结束位置
+                            expressionPositions.push(concat.length);        // 记录表达式中'{'前面有字符的在concat的位置，从1开始计算起
+                            concat.push('');                                // 在concat插入空字符串(占位符)，暂时表示{{ xx }}的数据
+                            console.log(expressionPositions, concat);
                         } else {
                             // we did not find an interpolation, so we have to add the remainder to the separators array
-                            if (index !== textLength) {
-                                concat.push(unescapeText(text.substring(index)));
+                            if (index !== textLength) {                     // 我们没有找到一个插值，所以我们必须添加其余的分离器队列
+                                concat.push(unescapeText(text.substring(index)));     // 将text插入到concat中
                             }
                             break;
                         }
@@ -10142,37 +10143,37 @@
                     // that's used is assigned or constructed by some JS code somewhere that is more testable or
                     // make it obvious that you bound the value to some user controlled value.  This helps reduce
                     // the load when auditing for XSS issues.
-                    if (trustedContext && concat.length > 1) {
+                    if (trustedContext && concat.length > 1) {              
                         throw $interpolateMinErr('noconcat',
                             "Error while interpolating: {0}\nStrict Contextual Escaping disallows " +
                             "interpolations that concatenate multiple expressions when a trusted value is " +
                             "required.  See http://docs.angularjs.org/api/ng.$sce", text);
                     }
 
-                    if (!mustHaveExpression || expressions.length) {
-                        var compute = function(values) {
-                            for (var i = 0, ii = expressions.length; i < ii; i++) {
-                                if (allOrNothing && isUndefined(values[i])) return;
-                                concat[expressionPositions[i]] = values[i];
+                    if (!mustHaveExpression || expressions.length) {        // 未传入参数mustHaveExpression或者有'{{'和'}}'需要被解释的表达式
+                        var compute = function(values) {                    // compute函数，用于解释成整个表达式
+                            for (var i = 0, ii = expressions.length; i < ii; i++) {       // 遍历表达式数组 
+                                if (allOrNothing && isUndefined(values[i])) return;       // 如果allOrNothing为true，并且其中一个value为undefined，直接返回
+                                concat[expressionPositions[i]] = values[i];               // 将表达式的值赋值expressionPositions对应的元素
                             }
-                            return concat.join('');
+                            return concat.join('');                         // 解释成整个表达式字符串
                         };
 
-                        var getValue = function(value) {
-                            return trustedContext ?
+                        var getValue = function(value) {                                // 获取value值。
+                            return trustedContext ?                                     // 如果trustedContext为true，说明是值得信任的。调用$sce.getTrusted方法获取value值，否则设备.valueOf方法获取value。
                                 $sce.getTrusted(trustedContext, value) :
                                 $sce.valueOf(value);
                         };
 
-                        var stringify = function(value) {
-                            if (value == null) { // null || undefined
+                        var stringify = function(value) {                               // 将value转成字符串
+                            if (value == null) { // null || undefined                   // 处理null, undefined的情况
                                 return '';
                             }
-                            switch (typeof value) {
+                            switch (typeof value) {                                     // 将数字转成字符串，如果是对象，调用toJson方法转成对象字符串
                                 case 'string':
                                     break;
                                 case 'number':
-                                    value = '' + value;
+                                    value = '' + value; 
                                     break;
                                 default:
                                     value = toJson(value);
@@ -10181,30 +10182,30 @@
                             return value;
                         };
 
-                        return extend(function interpolationFn(context) {
+                        return extend(function interpolationFn(context) {               // 返回interplationFn，参数context是数据对象
                             var i = 0;
-                            var ii = expressions.length;
-                            var values = new Array(ii);
+                            var ii = expressions.length;                                // 获取解释表达式数组的长度
+                            var values = new Array(ii);                                 // 创建一个值数组，长度为表达数组的长度
 
                             try {
-                                for (; i < ii; i++) {
-                                    values[i] = parseFns[i](context);
+                                for (; i < ii; i++) {                                   
+                                    values[i] = parseFns[i](context);                   // 调用parseFns中的interceptedExpression逐个解释'{{'和'}}'中的表达式，其中context为表达式有对应的值。并赋值给values数组
                                 }
 
-                                return compute(values);
+                                return compute(values);                                 // 调用compute(values)。解释成整个表达式字符串
                             } catch (err) {
-                                var newErr = $interpolateMinErr('interr', "Can't interpolate: {0}\n{1}", text,
+                                var newErr = $interpolateMinErr('interr', "Can't interpolate: {0}\n{1}", text, 
                                     err.toString());
                                 $exceptionHandler(newErr);
                             }
 
                         }, {
                             // all of these properties are undocumented for now
-                            exp: text, //just for compatibility with regular watchers created via $watch
-                            expressions: expressions,
-                            $$watchDelegate: function(scope, listener, objectEquality) {
+                            exp: text, //just for compatibility with regular watchers created via $watch      // 整个表达式文本
+                            expressions: expressions,                                                         // 表达式文本数组
+                            $$watchDelegate: function(scope, listener, objectEquality) {                      // 监听代理函数
                                 var lastValue;
-                                return scope.$watchGroup(parseFns, function interpolateFnWatcher(values, oldValues) {
+                                return scope.$watchGroup(parseFns, function interpolateFnWatcher(values, oldValues) {       // 
                                     var currValue = compute(values);
                                     if (isFunction(listener)) {
                                         listener.call(this, currValue, values !== oldValues ? lastValue : currValue, scope);
@@ -12662,11 +12663,11 @@
                     return wrapped;                                           // 返回wrapped
                 }
 
-                return function $parse(exp, interceptorFn) {                  // 解释表达式exp
+                return function $parse(exp, interceptorFn) {                  // 解释表达式函数$parse。解释表达式exp，interceptorFn将表达式转成字符串。
                     var parsedExpression, oneTime, cacheKey;
 
                     switch (typeof exp) {
-                        case 'string':
+                        case 'string':                                        // 如果表达式是字符串
                             cacheKey = exp = exp.trim();                      // 去掉头尾空格
 
                             parsedExpression = cache[cacheKey];               // 获取解释的表达式
@@ -12698,7 +12699,7 @@
                             return addInterceptor(parsedExpression, interceptorFn);   // 调用addInterceptor()
 
                         case 'function':
-                            return addInterceptor(exp, interceptorFn);
+                            return addInterceptor(exp, interceptorFn);       // 如果是函数，调用addInterceptor方法，将exp表达式作为第一个参数传入。
 
                         default:
                             return addInterceptor(noop, interceptorFn);
@@ -12843,29 +12844,29 @@
                     }, objectEquality);
                 }
 
-                function addInterceptor(parsedExpression, interceptorFn) {                                  // 
-                    if (!interceptorFn) return parsedExpression;
-
-                    var fn = function interceptedExpression(scope, locals) {
-                        var value = parsedExpression(scope, locals);
-                        var result = interceptorFn(value, scope, locals);
+                function addInterceptor(parsedExpression, interceptorFn) {                                  // 添加拦截器。返回interceptedExpression函数，并将parsedExpression的监听代理事件传播到interceptedExpression上，执行该函数返回表达式值的字符串。
+                    if (!interceptorFn) return parsedExpression;                                            // 如果没有传入interceptorFn, 直接返回
+ 
+                    var fn = function interceptedExpression(scope, locals) {                                // 拦截器函数
+                        var value = parsedExpression(scope, locals);                                        // 执行parsedExpression方法，获取表达式的值
+                        var result = interceptorFn(value, scope, locals);                                   // 执行interceptorFn，将表达式的值转成字符串
                         // we only return the interceptor's result if the
                         // initial value is defined (for bind-once)
-                        return isDefined(value) ? result : value;
+                        return isDefined(value) ? result : value;                                           // 返回表达式值的字符串
                     };
 
-                    // Propagate $$watchDelegates other then inputsWatchDelegate
+                    // Propagate $$watchDelegates other then inputsWatchDelegate                            
                     if (parsedExpression.$$watchDelegate &&
-                        parsedExpression.$$watchDelegate !== inputsWatchDelegate) {
-                        fn.$$watchDelegate = parsedExpression.$$watchDelegate;
-                    } else if (!interceptorFn.$stateful) {
+                        parsedExpression.$$watchDelegate !== inputsWatchDelegate) {                         // 如果不是判断表达式
+                        fn.$$watchDelegate = parsedExpression.$$watchDelegate;                              // 传播事件$$watchDelegate, fn.$$watchDelegate为parsedExpression.$$watchDelegate
+                    } else if (!interceptorFn.$stateful) {                                                  // 否则被认为是判断表达式，如果interceptorFn没有$stateful属性
                         // If there is an interceptor, but no watchDelegate then treat the interceptor like
                         // we treat filters - it is assumed to be a pure function unless flagged with $stateful
-                        fn.$$watchDelegate = inputsWatchDelegate;
-                        fn.inputs = [parsedExpression];
+                        fn.$$watchDelegate = inputsWatchDelegate;                                           // 传播inputsWatchDelegate事件到fn上
+                        fn.inputs = [parsedExpression];                                                     // 将[parsedExpression]赋值给inputs属性
                     }
 
-                    return fn;
+                    return fn;                                                                              // 返回fn
                 }
             }
         ];
@@ -15204,11 +15205,11 @@
                  *     `value` unchanged.
                  */
 
-                function valueOf(maybeTrusted) {
-                    if (maybeTrusted instanceof trustedValueHolderBase) {
-                        return maybeTrusted.$$unwrapTrustedValue();
+                function valueOf(maybeTrusted) {                                  // 返回maybeTrusted。如果maybeTruste为trustedValueHolderBase实例，则调用$$unwrapTrustedValue方法返回实例化时传入的参数值。
+                    if (maybeTrusted instanceof trustedValueHolderBase) {         // 如果是trustedValueHolderBase的实例，则返回maybeTrusted.$$unwrapTrustedValue()执行结果。
+                        return maybeTrusted.$$unwrapTrustedValue();               // 
                     } else {
-                        return maybeTrusted;
+                        return maybeTrusted;                                      // 否则返回maybeTrusted。
                     }
                 }
 
@@ -15645,7 +15646,7 @@
                 sce.valueOf = $sceDelegate.valueOf;
 
                 if (!enabled) {
-                    sce.trustAs = sce.getTrusted = function(type, value) {
+                    sce.trustAs = sce.getTrusted = function(type, value) {          // 返回value值
                         return value;
                     };
                     sce.valueOf = identity;
