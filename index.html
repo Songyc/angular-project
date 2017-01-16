@@ -1,24 +1,16 @@
 <html >
 <head>
-  	<script src="js/angular.js"></script>
+  	
 </head>
 <body ng-app="myApp">
 	<div class="test" ng-controller="PhoneListCtrl">
 	   <input type="text"  ng-click="alert()">
 	</div>
   	<script>
-  	angular.module('myApp', []).controller('PhoneListCtrl', ['$animate', '$scope', function ($animateProvider, $scope) {
-
-      $scope.alert = function () {
-        alert("scope");
-      };
-
-  		// providerCache.$animateProvider.register('.test', function () {
-  		// 	 return '123';
-  		// });
-
-  		// console.log(providerCache['.test-animationProvider'].$get());
-  	}]);
+  
+    var exp = /(([\d\w_\-]+)(?:\:([^;]+))?;?)/;
+    var exp2 = /(?:\:([^;]+))/;
+    console.log('input:input2'.match(exp));
   	</script>
 </body>
 </html>

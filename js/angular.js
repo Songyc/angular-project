@@ -7049,15 +7049,15 @@
                     var linkFns = [],                               // 
                         attrs, directives, nodeLinkFn, childNodes, childLinkFn, linkFnFound, nodeLinkFnFound;
 
-                    for (var i = 0; i < nodeList.length; i++) {     // 遍历nodeList
+                    for (var i = 0; i < nodeList.length; i++) {     // 遍历nodeList(jqLite对象)
                         attrs = new Attributes();                   // 实例化一个attrs对象
 
                         // we must always refer to nodeList[i] since the nodes can be replaced underneath us.
                         directives = collectDirectives(nodeList[i], [], attrs, i === 0 ? maxPriority : undefined,   // 
-                            ignoreDirective);                       //  
+                            ignoreDirective);                       // 获取排序好的指令信息数组
 
                         nodeLinkFn = (directives.length) ? applyDirectivesToNode(directives, nodeList[i], attrs, transcludeFn, $rootElement,
-                            null, [], [], previousCompileContext) : null;
+                            null, [], [], previousCompileContext) : null;     // 如果有信息对象，说明要编译的表达式。
 
                         if (nodeLinkFn && nodeLinkFn.scope) {
                             compile.$$addScopeClass(attrs.$$element);
@@ -7163,7 +7163,7 @@
                  * @param {number=} maxPriority Max directive priority.
                  */
 
-                function collectDirectives(node, directives, attrs, maxPriority, ignoreDirective) {     // 查找给定节点上的指令并将它们添加到已排序的指令集合中。
+                function collectDirectives(node, directives, attrs, maxPriority, ignoreDirective) {     //  返回排序好的指令信息数组。查找给定节点上的指令并将它们添加到已排序的指令集合中。
                     var nodeType = node.nodeType,
                         attrsMap = attrs.$attr,
                         match,
@@ -7174,7 +7174,7 @@
                             /* Element */
                             // use the node name: <directive>
                             addDirective(directives,                  // 调用addDirectives添加指令
-                                directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);
+                                directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);      // 'E'是自定义元素名Element Name，例如：<my-directive></my-directive>
 
                             // iterate over the attributes
                             for (var attr, name, nName, ngAttrName, value, isNgAttr, nAttrs = node.attributes,
@@ -7210,34 +7210,34 @@
                                     }
                                 }
                                 addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);        // 添加特性拦截指令addAttrInterpolateDirective。
-                                addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,
+                                addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,     // 添加指令到tDirectives, 返回获取的指令信息对象
                                     attrEndName);
                             }
 
                             // use class as directive
-                            className = node.className;
-                            if (isString(className) && className !== '') {
-                                while (match = CLASS_DIRECTIVE_REGEXP.exec(className)) {
-                                    nName = directiveNormalize(match[2]);
-                                    if (addDirective(directives, nName, 'C', maxPriority, ignoreDirective)) {
-                                        attrs[nName] = trim(match[3]);
+                            className = node.className;                                       // 获取类名
+                            if (isString(className) && className !== '') {                    // 如果有类名
+                                while (match = CLASS_DIRECTIVE_REGEXP.exec(className)) {      // 有三个分数，第一个分组是完整类名，第二个分组是':'前字符串，第三个分组是':'后的字符串。ng-class="my-directive: exp;"
+                                    nName = directiveNormalize(match[2]);                     
+                                    if (addDirective(directives, nName, 'C', maxPriority, ignoreDirective)) {   // 匹配到内置指令集合对象hasDirectives中的指令，添加指令到directives
+                                        attrs[nName] = trim(match[3]);                        // 设置特性为myDirective="exp"。去掉':'后的字符串空格，添加到特性对象attrs上，属性性为':'前字符串转成驼峰式。
                                     }
-                                    className = className.substr(match.index + match[0].length);
+                                    className = className.substr(match.index + match[0].length);    // 截取逗号后面的字符串
                                 }
                             }
                             break;
-                        case NODE_TYPE_TEXT:
+                        case NODE_TYPE_TEXT:                                                  // 如果文本节点
                             /* Text Node */
-                                addTextInterpolateDirective(directives, node.nodeValue);
+                                addTextInterpolateDirective(directives, node.nodeValue);      // 执行addTextInterpolateDirective函数, 添加指令到directives, 获取的指令信息对象
                             break;
-                        case NODE_TYPE_COMMENT:
+                        case NODE_TYPE_COMMENT:                                               // 如果是注释节点
                             /* Comment */
                                 try {
-                                    match = COMMENT_DIRECTIVE_REGEXP.exec(node.nodeValue);
+                                    match = COMMENT_DIRECTIVE_REGEXP.exec(node.nodeValue);    // <!-- directive: my-directive exp --> 有两个分组，第一个分组获取':'后面，' '前面的字符串，如'my-directive', 第二个分组获取空格后面的字符串, 如'exp';
                                     if (match) {
-                                        nName = directiveNormalize(match[1]);
-                                        if (addDirective(directives, nName, 'M', maxPriority, ignoreDirective)) {
-                                            attrs[nName] = trim(match[2]);
+                                        nName = directiveNormalize(match[1]);                 // 转成驼峰式
+                                        if (addDirective(directives, nName, 'M', maxPriority, ignoreDirective)) {     // 执行addTextInterpolateDirective函数，添加指令到directives, 获取的指令信息对象
+                                            attrs[nName] = trim(match[2]);                    // 设置特性为myDirective="exp"
                                         }
                                     }
                             } catch (e) {
@@ -7248,8 +7248,8 @@
                             break;
                     }
 
-                    directives.sort(byPriority);
-                    return directives;
+                    directives.sort(byPriority);                                              // 按优先级，字母，index次序优先排在数组前面
+                    return directives;                                                        // 返回排序好的指令信息数组
                 }
 
                 /**
@@ -7261,7 +7261,7 @@
                  * @returns {*}
                  */
 
-                function groupScan(node, attrStart, attrEnd) {
+                function groupScan(node, attrStart, attrEnd) {                // 获取node的兄弟元素中含有attrStart和attrEnd特性之间的兄弟元素，并转成jqLite对象
                     var nodes = [];
                     var depth = 0;
                     if (attrStart && node.hasAttribute && node.hasAttribute(attrStart)) {
@@ -7280,10 +7280,10 @@
                             node = node.nextSibling;
                         } while (depth > 0);
                     } else {
-                        nodes.push(node);
+                        nodes.push(node);                                     // 如果没有，直接加到node
                     }
 
-                    return jqLite(nodes);
+                    return jqLite(nodes);                                     // 转成jqLite对象
                 }
 
                 /**
@@ -7309,27 +7309,27 @@
                  *
                  * @param {Array} directives Array of collected directives to execute their compile function.
                  *        this needs to be pre-sorted by priority order.
-                 * @param {Node} compileNode The raw DOM node to apply the compile functions to
-                 * @param {Object} templateAttrs The shared attribute function
-                 * @param {function(angular.Scope, cloneAttachFn=)} transcludeFn A linking function, where the
+                 * @param {Node} compileNode The raw DOM node to apply the compile functions to     编译原DOM节点
+                 * @param {Object} templateAttrs The shared attribute function                      共享属性函数
+                 * @param {function(angular.Scope, cloneAttachFn=)} transcludeFn A linking function, where the    一个连接功能，scope参数自动生成到新的节点嵌入到父作用域中
                  *                                                  scope argument is auto-generated to the new
                  *                                                  child of the transcluded parent scope.
-                 * @param {JQLite} jqCollection If we are working on the root of the compile tree then this
+                 * @param {JQLite} jqCollection If we are working on the root of the compile tree then this       如果我们在编译树的根，当这个参数有根jqLite数组，因此我们可以替换节点。
                  *                              argument has the root jqLite array so that we can replace nodes
                  *                              on it.
-                 * @param {Object=} originalReplaceDirective An optional directive that will be ignored when
+                 * @param {Object=} originalReplaceDirective An optional directive that will be ignored when     
                  *                                           compiling the transclusion.
                  * @param {Array.<Function>} preLinkFns
                  * @param {Array.<Function>} postLinkFns
-                 * @param {Object} previousCompileContext Context used for previous compilation of the current
+                 * @param {Object} previousCompileContext Context used for previous compilation of the current    
                  *                                        node
                  * @returns {Function} linkFn
                  */
 
-                function applyDirectivesToNode(directives, compileNode, templateAttrs, transcludeFn,
+                function applyDirectivesToNode(directives, compileNode, templateAttrs, transcludeFn,      // 
                     jqCollection, originalReplaceDirective, preLinkFns, postLinkFns,
                     previousCompileContext) {
-                    previousCompileContext = previousCompileContext || {};
+                    previousCompileContext = previousCompileContext || {};                                // 初始化前编译上下文
 
                     var terminalPriority = -Number.MAX_VALUE,
                         newScopeDirective,
@@ -7341,7 +7341,7 @@
                         hasTranscludeDirective = false,
                         hasTemplate = false,
                         hasElementTranscludeDirective = previousCompileContext.hasElementTranscludeDirective,
-                        $compileNode = templateAttrs.$$element = jqLite(compileNode),
+                        $compileNode = templateAttrs.$$element = jqLite(compileNode),                     // 转成jqLite对象
                         directive,
                         directiveName,
                         $template,
@@ -7351,32 +7351,32 @@
                         directiveValue;
 
                     // executes all directives on the current element
-                    for (var i = 0, ii = directives.length; i < ii; i++) {
+                    for (var i = 0, ii = directives.length; i < ii; i++) {                // 遍历指令信息数组
                         directive = directives[i];
                         var attrStart = directive.$$start;
                         var attrEnd = directive.$$end;
 
                         // collect multiblock sections
                         if (attrStart) {
-                            $compileNode = groupScan(compileNode, attrStart, attrEnd);
+                            $compileNode = groupScan(compileNode, attrStart, attrEnd);    // 获取有attrStart和attrEnd特性元素以及之前的所有兄弟节点
                         }
                         $template = undefined;
 
-                        if (terminalPriority > directive.priority) {
+                        if (terminalPriority > directive.priority) {                      // 优先级不能小于最小数
                             break; // prevent further processing of directives
                         }
 
-                        if (directiveValue = directive.scope) {
+                        if (directiveValue = directive.scope) {                           // 
 
                             // skip the check for directives with async templates, we'll check the derived sync
                             // directive when the template arrives
-                            if (!directive.templateUrl) {
-                                if (isObject(directiveValue)) {
+                            if (!directive.templateUrl) {                                 // 如果没有模板地址
+                                if (isObject(directiveValue)) {                           // 如果directive.scope是对象，
                                     // This directive is trying to add an isolated scope.
                                     // Check that there is no scope of any kind already
                                     assertNoDuplicate('new/isolated scope', newIsolateScopeDirective || newScopeDirective,
                                         directive, $compileNode);
-                                    newIsolateScopeDirective = directive;
+                                    newIsolateScopeDirective = directive;                 // 赋值给newIsolateScopeDirectve新隔离作用域指令对象
                                 } else {
                                     // This directive is trying to add a child scope.
                                     // Check that there is no isolated scope already
@@ -7385,41 +7385,41 @@
                                 }
                             }
 
-                            newScopeDirective = newScopeDirective || directive;
+                            newScopeDirective = newScopeDirective || directive;           // 将directive赋值给newScopeDirective新作用域指令对象
                         }
 
-                        directiveName = directive.name;
+                        directiveName = directive.name;                                   // 指令名
 
-                        if (!directive.templateUrl && directive.controller) {
-                            directiveValue = directive.controller;
-                            controllerDirectives = controllerDirectives || {};
-                            assertNoDuplicate("'" + directiveName + "' controller",
+                        if (!directive.templateUrl && directive.controller) {             // 如果没有templateUrl并且有controller
+                            directiveValue = directive.controller;                        // 指令控制符，如'@'
+                            controllerDirectives = controllerDirectives || {};            // 获取控制指令对象，默认为空对象
+                            assertNoDuplicate("'" + directiveName + "' controller",       // 判断有没有复制controller
                                 controllerDirectives[directiveName], directive, $compileNode);
-                            controllerDirectives[directiveName] = directive;
+                            controllerDirectives[directiveName] = directive;              // 将指令对象存储到控制指令对象中，属性名为指令名
                         }
 
-                        if (directiveValue = directive.transclude) {
-                            hasTranscludeDirective = true;
+                        if (directiveValue = directive.transclude) {                      // 如果有.transclude属性
+                            hasTranscludeDirective = true;                                // 设置hasTranscludeDirective为true
 
                             // Special case ngIf and ngRepeat so that we don't complain about duplicate transclusion.
                             // This option should only be used by directives that know how to safely handle element transclusion,
                             // where the transcluded nodes are added or replaced after linking.
-                            if (!directive.$$tlb) {
+                            if (!directive.$$tlb) {                                       
                                 assertNoDuplicate('transclusion', nonTlbTranscludeDirective, directive, $compileNode);
                                 nonTlbTranscludeDirective = directive;
                             }
 
-                            if (directiveValue == 'element') {
-                                hasElementTranscludeDirective = true;
-                                terminalPriority = directive.priority;
+                            if (directiveValue == 'element') {                            // 如果是嵌入的是元素
+                                hasElementTranscludeDirective = true;                     // hasElementTranscludeDirective设置为true
+                                terminalPriority = directive.priority;                    // 
                                 $template = $compileNode;
-                                $compileNode = templateAttrs.$$element =
+                                $compileNode = templateAttrs.$$element =                  // 保存到templateAttrs的$$element中
                                     jqLite(document.createComment(' ' + directiveName + ': ' +
-                                        templateAttrs[directiveName] + ' '));
-                                compileNode = $compileNode[0];
-                                replaceWith(jqCollection, sliceArgs($template), compileNode);
+                                        templateAttrs[directiveName] + ' '));             // 创建注释节点，并转成jqLite对象
+                                compileNode = $compileNode[0];                            // 获取注释节点
+                                replaceWith(jqCollection, sliceArgs($template), compileNode);     // 
 
-                                childTranscludeFn = compile($template, transcludeFn, terminalPriority,
+                                childTranscludeFn = compile($template, transcludeFn, terminalPriority,    // 返回一个函数publicLinkFn, 孩子嵌入方法
                                     replaceDirective && replaceDirective.name, {
                                         // Don't pass in:
                                         // - controllerDirectives - otherwise we'll create duplicates controllers
@@ -7431,13 +7431,13 @@
                                         nonTlbTranscludeDirective: nonTlbTranscludeDirective
                                     });
                             } else {
-                                $template = jqLite(jqLiteClone(compileNode)).contents();
-                                $compileNode.empty(); // clear contents
-                                childTranscludeFn = compile($template, transcludeFn);
+                                $template = jqLite(jqLiteClone(compileNode)).contents();    // 否则获取compileNode的孩子字符串
+                                $compileNode.empty(); // clear contents                     // 清空替换(注释)元素
+                                childTranscludeFn = compile($template, transcludeFn);       // 返回一个函数publicLinkFn, 孩子嵌入方法
                             }
                         }
 
-                        if (directive.template) {
+                        if (directive.template) {                                         // 如果有
                             hasTemplate = true;
                             assertNoDuplicate('template', templateDirective, directive, $compileNode);
                             templateDirective = directive;
@@ -7832,24 +7832,24 @@
                  */
 
                 function addDirective(tDirectives, name, location, maxPriority, ignoreDirective, startAttrName,
-                    endAttrName) {                                          // 添加指令到tDirectives
+                    endAttrName) {                                          // 如果匹配到内置指令集合对象hasDirectives中的指令，添加指令到tDirectives, 返回获取的指令信息对象
                     if (name === ignoreDirective) return null;              // 如果name为忽略指令，直接返回
                     var match = null;                           
-                    if (hasDirectives.hasOwnProperty(name)) {               // 匹配是否有内置指令
+                    if (hasDirectives.hasOwnProperty(name)) {               // 匹配是否有内置指令集合对象hasDirectives
                         for (var directive, directives = $injector.get(name + Suffix),      // 从providerCache中获取name+Suffix的服务
                                 i = 0, ii = directives.length; i < ii; i++) {       // 
                             try {
-                                directive = directives[i];                  // 
+                                directive = directives[i];                  // 获取指令信息对象
                                 if ((maxPriority === undefined || maxPriority > directive.priority) &&
                                     directive.restrict.indexOf(location) != -1) {   // 如果未传入优先级，或者大于指令的优先级，并且restrict有location的字段
                                     if (startAttrName) {                    // 如果有传入startAttrName
-                                        directive = inherit(directive, {    // 创建一个directive实例，自定义$$start, $$end属性
+                                        directive = inherit(directive, {    // 创建一个directive实例，保存startAttrName, endAttrName到 $$start, $$end属性上
                                             $$start: startAttrName,
                                             $$end: endAttrName
                                         });
                                     }
                                     tDirectives.push(directive);            // 将指令信息对象插入到tDirectives
-                                    match = directive;                      // 
+                                    match = directive;                      // 将信息对象赋值给match
                                 }
                             } catch (e) {
                                 $exceptionHandler(e);
@@ -8047,11 +8047,11 @@
                  * Sorting function for bound directives.
                  */
 
-                function byPriority(a, b) {
-                    var diff = b.priority - a.priority;
-                    if (diff !== 0) return diff;
-                    if (a.name !== b.name) return (a.name < b.name) ? -1 : 1;
-                    return a.index - b.index;
+                function byPriority(a, b) {               // 排序，按优先级，字母，index次序优先排在数组前面
+                    var diff = b.priority - a.priority;                         // 倒序, 优先级大的排前面
+                    if (diff !== 0) return diff;                                // 如果优先级一样
+                    if (a.name !== b.name) return (a.name < b.name) ? -1 : 1;   // 按字母顺序排前面
+                    return a.index - b.index;                                   // 否则按index大的排前面
                 }
 
 
@@ -8063,14 +8063,14 @@
                 }
 
 
-                function addTextInterpolateDirective(directives, text) {
+                function addTextInterpolateDirective(directives, text) {        // 增加文本解释拦截指令。如果文本有需要解释的表达式，把解释的指令信息对象添加到指令信息数组中 
                     var interpolateFn = $interpolate(text, true);
                     if (interpolateFn) {
                         directives.push({
-                            priority: 0,
+                            priority: 0,                                        // 优先级为0
                             compile: function textInterpolateCompileFn(templateNode) {
-                                var templateNodeParent = templateNode.parent(),
-                                    hasCompileParent = !! templateNodeParent.length;
+                                var templateNodeParent = templateNode.parent(), // 获取文本的父节点
+                                    hasCompileParent = !! templateNodeParent.length;  
 
                                 // When transcluding a template that has bindings in the root
                                 // we don't have a parent and thus need to add the class during linking fn.
@@ -8119,20 +8119,20 @@
                 }
 
 
-                function addAttrInterpolateDirective(node, directives, value, name, allOrNothing) {           // 
+                function addAttrInterpolateDirective(node, directives, value, name, allOrNothing) {           // 增加特性解释拦截指令。如果特性有需要解释的表达式，把解释的指令信息对象添加到指令信息数组中
                     var interpolateFn = $interpolate(value, true);            // 返回interplationFn，执行该函数会执行每个解释函数，解释成整个表达式字符串。如果没有表达式，返回undefined
 
                     // no interpolation found -> ignore
-                    if (!interpolateFn) return;                               // 
+                    if (!interpolateFn) return;                               
 
 
-                    if (name === "multiple" && nodeName_(node) === "select") {  
+                    if (name === "multiple" && nodeName_(node) === "select") {    
                         throw $compileMinErr("selmulti",
                             "Binding to the 'multiple' attribute is not supported. Element: {0}",
                             startingTag(node));
                     }
 
-                    directives.push({
+                    directives.push({                                         // 添加优先级priority为100, 先编译'{{'和'}}'里的表达式, compile编译函数
                         priority: 100,
                         compile: function() {
                             return {
@@ -8197,7 +8197,7 @@
                  * @param {Node} newNode The new DOM node.
                  */
 
-                function replaceWith($rootElement, elementsToRemove, newNode) {
+                function replaceWith($rootElement, elementsToRemove, newNode) {         // 用newNode替换$rootElement和elementsToRemove的第一个元素，并且去掉删除被替换元素的缓存。
                     var firstElementToRemove = elementsToRemove[0],
                         removeCount = elementsToRemove.length,
                         parent = firstElementToRemove.parentNode,
@@ -8205,22 +8205,22 @@
 
                     if ($rootElement) {
                         for (i = 0, ii = $rootElement.length; i < ii; i++) {
-                            if ($rootElement[i] == firstElementToRemove) {
-                                $rootElement[i++] = newNode;
-                                for (var j = i, j2 = j + removeCount - 1,
-                                        jj = $rootElement.length; j < jj; j++, j2++) {
-                                    if (j2 < jj) {
+                            if ($rootElement[i] == firstElementToRemove) {              // 如果根元素是firstElementToRemove
+                                $rootElement[i++] = newNode;                            // 用注释节点替换创建的编译节点到$rootElement上第一个元素
+                                for (var j = i, j2 = j + removeCount - 1,               // 遍历$rootElement
+                                        jj = $rootElement.length; j < jj; j++, j2++) {  // 如果j2小于jj
+                                    if (j2 < jj) {                                      // 
                                         $rootElement[j] = $rootElement[j2];
                                     } else {
                                         delete $rootElement[j];
                                     }
                                 }
-                                $rootElement.length -= removeCount - 1;
+                                $rootElement.length -= removeCount - 1;                 // 
 
                                 // If the replaced element is also the jQuery .context then replace it
                                 // .context is a deprecated jQuery api, so we should set it only when jQuery set it
                                 // http://api.jquery.com/context/
-                                if ($rootElement.context === firstElementToRemove) {
+                                if ($rootElement.context === firstElementToRemove) {    // 设置context上下文
                                     $rootElement.context = newNode;
                                 }
                                 break;
@@ -8229,23 +8229,23 @@
                     }
 
                     if (parent) {
-                        parent.replaceChild(newNode, firstElementToRemove);
+                        parent.replaceChild(newNode, firstElementToRemove);             // 用新节点替换掉firstElementToRemove
                     }
 
                     // TODO(perf): what's this document fragment for? is it needed? can we at least reuse it?
-                    var fragment = document.createDocumentFragment();
-                    fragment.appendChild(firstElementToRemove);
+                    var fragment = document.createDocumentFragment();                   // 创建一个文档碎片
+                    fragment.appendChild(firstElementToRemove);                         // 将第一个替换的节点加入文档碎片中
 
                     // Copy over user data (that includes Angular's $scope etc.). Don't copy private
                     // data here because there's no public interface in jQuery to do that and copying over
                     // event listeners (which is the main use of private data) wouldn't work anyway.
-                    jqLite(newNode).data(jqLite(firstElementToRemove).data());
+                    jqLite(newNode).data(jqLite(firstElementToRemove).data());          // 创建firstElementToRemove元素缓存对象，初始化为空对象
 
                     // Remove data of the replaced element. We cannot just call .remove()
                     // on the element it since that would deallocate scope that is needed
                     // for the new node. Instead, remove the data "manually".
-                    if (!jQuery) {
-                        delete jqLite.cache[firstElementToRemove[jqLite.expando]];
+                    if (!jQuery) {                                                      // 如果没有jQuery
+                        delete jqLite.cache[firstElementToRemove[jqLite.expando]];      // 删除替换元素的数据
                     } else {
                         // jQuery 2.x doesn't expose the data storage. Use jQuery.cleanData to clean up after
                         // the replaced element. The cleanData version monkey-patched by Angular would cause
@@ -8258,14 +8258,14 @@
                         jQuery.cleanData([firstElementToRemove]);
                     }
 
-                    for (var k = 1, kk = elementsToRemove.length; k < kk; k++) {
+                    for (var k = 1, kk = elementsToRemove.length; k < kk; k++) {        // 将第二个和第二个以后的删除替换元素加入到文档碎片中，并删除它的数据。
                         var element = elementsToRemove[k];
                         jqLite(element).remove(); // must do this way to clean up expando
                         fragment.appendChild(element);
                         delete elementsToRemove[k];
                     }
 
-                    elementsToRemove[0] = newNode;
+                    elementsToRemove[0] = newNode;                                      // 用新的节点替换elementsToRemove第一个元素，长度重置为1
                     elementsToRemove.length = 1;
                 }
 
@@ -10133,7 +10133,7 @@
                             if (index !== textLength) {                     // 我们没有找到一个插值，所以我们必须添加其余的分离器队列
                                 concat.push(unescapeText(text.substring(index)));     // 将text插入到concat中
                             }
-                            break;
+                            break; 
                         }
                     }
 

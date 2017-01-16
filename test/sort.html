@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script type="text/javascript">
+
+	function sortNumber(a, b)
+	{
+	return a < b ? - 1: 1
+	}
+
+	var arr = new Array(6)
+	arr[0] = "a"
+	arr[1] = "c"
+	arr[2] = "e"
+	arr[3] = "g"
+	arr[4] = "f"
+	arr[5] = "b"
+
+	document.write(arr + "<br />")
+	document.write(arr.sort(sortNumber))
+
+	</script>
+</body>
+</html>
